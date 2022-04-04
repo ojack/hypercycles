@@ -1,0 +1,5 @@
+- add play/pause
+- add controls for replication amount, catalytic support amount
+- randomly add parasites
+- draw in parasites
+- add diffusion
