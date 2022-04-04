@@ -28,7 +28,7 @@ const STATES = {
 // QUESTIONS:
 // - how to determine amount of catalytic support? where does claim empty come from? (see results states)
 
-const EMPTY = 0
+// const EMPTY = 0
 
 
 
@@ -57,6 +57,7 @@ const SPECIES = new Array(NUM_SPECIES + 1).fill(0).map((_, i) => {
         // also give catalytic support to parasite if species 1
        // if ( i === 2) s.catalyticSupport[STATES.PARASITE] = CATALYTIC_SUPPORT*2
     }
+    console.log(s)
     return s
 })
 
@@ -113,14 +114,14 @@ module.exports.createModel = (w = 50) => {
 
     init()
 
-    const decay = (state) => Math.random() < DECAY_PROBABILITY ? EMPTY : state
+    const decay = (state) => Math.random() < DECAY_PROBABILITY ? STATES.EMPTY : state
 
     // from paper, c[x,y] is the catalytic support x gets from y (where does this come from?)
     // if x is empty, gets no catalytic support from neighbors
     const c = (x, y) => {
         const xS = SPECIES[x.state]
         // console.log(x, y)
-        //  console.log(xS.catalyticSupport, y, xS.catalyticSupport[y.state])
+      //   console.log(xS.catalyticSupport, y, xS.catalyticSupport[y.state])
         return xS.catalyticSupport[y.state] ? xS.catalyticSupport[y.state] : 0
     }
     // use "c" to refer to claims parameters as defined in paper
@@ -153,7 +154,7 @@ module.exports.createModel = (w = 50) => {
 
             const r = Math.random()
 
-            newState = getOutcomeFromProbabilities([EMPTY, n.state, s.state, e.state, w.state], [pEmpty, pN, pS, pE, pW])
+            newState = getOutcomeFromProbabilities([STATES.EMPTY, n.state, s.state, e.state, w.state], [pEmpty, pN, pS, pE, pW])
             // if(r < pEmpty) {
             //     newState = EMPTY
             // } else if ( r < pEmpty + pN ) {
@@ -166,8 +167,8 @@ module.exports.createModel = (w = 50) => {
             // } else {
             //     newState = w.state
             // }
-            // console.log('claims', cN, cS, cE, cW, cSum)
-            // console.log('probs', pEmpty, pN, pS, pE, pW)
+            //console.log('claims', cN, cS, cE, cW, cSum)
+           //  console.log('probs', pEmpty, pN, pS, pE, pW)
 
         }
         return newState
@@ -180,12 +181,14 @@ module.exports.createModel = (w = 50) => {
         l.nodes.forEach((node, i) => {
             const { state } = node
             let newState = state
-            if (state !== EMPTY) {
+            if (state !== STATES.EMPTY) {
                 newState = decay(state)
             } else {
                 newState = replicate(node)
             }
             newNodeState[i] = newState
+           //console.log(state, newState)
+
         })
 
         l.nodes.forEach((node, i) => {

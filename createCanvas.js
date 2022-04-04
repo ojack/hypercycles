@@ -1,4 +1,4 @@
-const SCALE = 5
+const SCALE = 3
 
 
 module.exports = (w, h) => {
