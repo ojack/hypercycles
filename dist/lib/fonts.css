@@ -1,0 +1,98 @@
+.grayscale {
+}
+
+.roboto-slab {
+  font-family: "Roboto Slab", "Garamond", serif;
+}
+
+.ruda {
+ font-family: "Ruda", sans-serif;
+ font-weight: 400;
+}
+
+.ubuntu {
+ font-family: "Ubuntu", sans-serif;
+ font-weight: 200
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+time {
+  font-family: "Ubuntu", sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 400
+}
+
+.abstract {
+	font-family: "Ubuntu", sans-serif;
+}
+
+nav, footer {
+	 font-family: "Ubuntu", sans-serif;
+	 font-weight: 100;
+}
+
+
+article a:link {
+	color:darkred;
+	text-decoration:none;
+}
+
+article a:visited {
+	color:darkred;
+	text-decoration:none;
+}
+
+article a:hover{
+	opacity:0.6;
+	transition: color,opacity 0.2s ease-in;
+}	
+
+article h1 a:link {
+	color:black;
+	text-decoration:none;
+}
+
+article h2 a:visited {
+	color:black;
+	text-decoration:none;
+}
+
+article h2 a:link {
+	color:black;
+	text-decoration:none;
+}
+
+article h3 a:visited {
+	color:black;
+	text-decoration:none;
+}
+
+article h3 a:link {
+	color:black;
+	text-decoration:none;
+}
+
+article h1 a:visited {
+	color:black;
+	text-decoration:none;
+}
+
+
+.plot {
+    font-family: "Ubuntu", sans-serif;
+    font-weight: 400;
+}
+
+
