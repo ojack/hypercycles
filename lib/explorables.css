@@ -1,0 +1,14 @@
+
+.explorable_display {
+	border:1px solid black;
+	background:none;
+	display: block;
+	margin: auto;
+	margin-bottom: 10px
+}
+
+.explorable_widgets {
+	display: block;
+	display: block;
+	margin: auto;
+}
