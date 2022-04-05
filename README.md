@@ -1,6 +1,6 @@
-## Simulation of hypercycles for complexity explorables
+## Hypercycles
 
-This repo is a work-in-progress simulation of hypercylces and parasites in pre-biotic evolution, from the paper "SPIRAL WAVE STRUCTURE IN PRE-BIOTIC EVOLUTION: HYPERCYCLES STABLE AGAINST PARASITES" by M.C. BOERLIJST and P. HOGEWEG
+Work-in-progress simulation of hypercycles and parasites in pre-biotic evolution, from the paper "SPIRAL WAVE STRUCTURE IN PRE-BIOTIC EVOLUTION: HYPERCYCLES STABLE AGAINST PARASITES" by M.C. BOERLIJST and P. HOGEWEG
 
 ![hypercylce plates](assets/hypercycles.png)
 *image from SPIRAL WAVE STRUCTURE IN PRE-BIOTIC EVOLUTION: HYPERCYCLES STABLE AGAINST PARASITES" by M.C. BOERLIJST and P. HOGEWEG*
