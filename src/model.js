@@ -66,7 +66,7 @@ console.log('species', SPECIES)
 module.exports.createModel = (w = 50, controls) => {
     const { replication : replicationAmount, catalyticSupport: catalyticSupportAmount, decay : decayAmount } = controls.sliders
     const num_parasites = Math.floor(w/3)
-    let l = lattice.square(w)
+    let l = lattice.square(w).boundary("periodic")
     function init() {
         const outcomes = SPECIES.map((s) => s.index)
         const probabilities = SPECIES.map((s) => s.initialProbability)

@@ -1,5 +1,5 @@
 var lattice = (function () {
-
+    console.log('creating lattice')
     var lattice; // instance of the lattice
 
     // constructor for square lattice
@@ -42,6 +42,7 @@ var lattice = (function () {
         }
 
         var boundary = function (s) {
+            console.log('setting boundary', s)
             if (typeof s !== "undefined") {
                 if (s == "dirichlet") {
                     BoundaryConditions = "dirichlet";
@@ -51,7 +52,8 @@ var lattice = (function () {
                 } else {
                     BoundaryConditions = "periodic";
                     nodes.forEach(function (d, i) {
-                        d.neighbors = nn_periodic(i, M).map(function (x) { return nodes[x] });
+                        const { neighborsArray, neighborsObject } = nn_periodic(i, M)
+                        d.neighbors =neighborsArray.map(function (x) { return nodes[x] });
                     })
                 }
                 return this;
@@ -160,6 +162,7 @@ var lattice = (function () {
 
         function periodic_neighbors(p) {
 
+            console.log('getting neighbors', p, u)
             p.forEach(function (d) {
                 d.neighbors = [];
                 u.forEach(function (n) {
@@ -333,8 +336,29 @@ var lattice = (function () {
 
     function d2l(x, y, n) { return y * n + x; }
     function l2d(i, n) { return [i % n, Math.floor(i / n)]; }
+
+    // @ojack function for assigning specific direction to neighbors
+    function getDirection (i, j) {
+        if(j === -1) {
+            if(i === -1) return 'nw'
+            if(i === 0) return 'n'
+            if(i === 1) return 'ne'
+        } else if (j == 0) {
+            if(i === -1) return 'w'
+            if(i === 0) return null
+            if(i === 1) return 'e'
+        } else if (j === 1) {
+            if (i === -1) return 'sw'
+            if (i === 0) return 's'
+            if (i === 1) return 'se'
+        } 
+    }
+
+    
     function nn_periodic(k, n) {
         wadda = [];
+        const neighborsObject = {}
+        console.log('neighbors', k, n)
         for (i = -1; i <= 1; i++) {
             for (j = -1; j <= 1; j++) {
                 var p = l2d(k, n),
@@ -343,11 +367,14 @@ var lattice = (function () {
                     a = x + i,
                     b = y + j;
                 if (!(j == 0 && i == 0)) {
-                    wadda.push(n * ((b + n) % n) + (a + n) % n);
+                    const node = n * ((b + n) % n) + (a + n) % n
+                    neighborsObject[getDirection(i, j)] = node
+                    wadda.push(node);
                 }
             }
         }
-        return wadda;
+        console.log(wadda)
+        return { neighborsArray: wadda, neighborsObject: neighborsObject }
     }
 
     function nn_dirichlet(k, n) {
