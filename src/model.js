@@ -70,6 +70,7 @@ module.exports.createModel = (w = 50, controls) => {
     function init() {
         const outcomes = SPECIES.map((s) => s.index)
         const probabilities = SPECIES.map((s) => s.initialProbability)
+       // console.log(l.nodes)
         // initialize node state
         l.nodes.forEach((node) => {
             // node.state = Math.floor(Math.random()*(SPECIES.length))
@@ -80,19 +81,19 @@ module.exports.createModel = (w = 50, controls) => {
             // m = row and n = column
             // for now, only calculate if node as all 8 neighbors
             // @todo deal with edge cases
-            const neighbors = node.neighbors
-            if (neighbors.length >= 8) {
-                node.neighborsObject = {
-                    nw: neighbors.filter((_nb) => _nb.m == node.m - 1 && _nb.n == node.n - 1)[0],
-                    n: neighbors.filter((_nb) => _nb.m == node.m - 1 && _nb.n == node.n)[0],
-                    ne: neighbors.filter((_nb) => _nb.m == node.m - 1 && _nb.n == node.n + 1)[0],
-                    w: neighbors.filter((_nb) => _nb.m == node.m && _nb.n == node.n - 1)[0],
-                    e: neighbors.filter((_nb) => _nb.m == node.m && _nb.n == node.n + 1)[0],
-                    sw: neighbors.filter((_nb) => _nb.m == node.m + 1 && _nb.n == node.n - 1)[0],
-                    s: neighbors.filter((_nb) => _nb.m == node.m + 1 && _nb.n == node.n)[0],
-                    se: neighbors.filter((_nb) => _nb.m == node.m + 1 && _nb.n == node.n + 1)[0],
-                }
-            }
+            // const neighbors = node.neighbors
+            // if (neighbors.length >= 8) {
+            //     node.neighborsObject = {
+            //         nw: neighbors.filter((_nb) => _nb.m == node.m - 1 && _nb.n == node.n - 1)[0],
+            //         n: neighbors.filter((_nb) => _nb.m == node.m - 1 && _nb.n == node.n)[0],
+            //         ne: neighbors.filter((_nb) => _nb.m == node.m - 1 && _nb.n == node.n + 1)[0],
+            //         w: neighbors.filter((_nb) => _nb.m == node.m && _nb.n == node.n - 1)[0],
+            //         e: neighbors.filter((_nb) => _nb.m == node.m && _nb.n == node.n + 1)[0],
+            //         sw: neighbors.filter((_nb) => _nb.m == node.m + 1 && _nb.n == node.n - 1)[0],
+            //         s: neighbors.filter((_nb) => _nb.m == node.m + 1 && _nb.n == node.n)[0],
+            //         se: neighbors.filter((_nb) => _nb.m == node.m + 1 && _nb.n == node.n + 1)[0],
+            //     }
+            // }
         })
     }
 

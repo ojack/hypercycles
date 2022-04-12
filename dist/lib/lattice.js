@@ -1,5 +1,4 @@
 var lattice = (function () {
-    console.log('creating lattice')
     var lattice; // instance of the lattice
 
     // constructor for square lattice
@@ -54,6 +53,13 @@ var lattice = (function () {
                     nodes.forEach(function (d, i) {
                         const { neighborsArray, neighborsObject } = nn_periodic(i, M)
                         d.neighbors =neighborsArray.map(function (x) { return nodes[x] });
+                        // console.log(neighborsArray, neighborsObject)
+                        Object.entries(neighborsObject).forEach(([key, x]) => {
+                            neighborsObject[key] = nodes[x]
+                        })
+                        nodes[i].neighborsObject = neighborsObject
+                        // console.log(neighborsObject,     d)
+
                     })
                 }
                 return this;
@@ -161,8 +167,6 @@ var lattice = (function () {
         }
 
         function periodic_neighbors(p) {
-
-            console.log('getting neighbors', p, u)
             p.forEach(function (d) {
                 d.neighbors = [];
                 u.forEach(function (n) {
@@ -358,7 +362,6 @@ var lattice = (function () {
     function nn_periodic(k, n) {
         wadda = [];
         const neighborsObject = {}
-        console.log('neighbors', k, n)
         for (i = -1; i <= 1; i++) {
             for (j = -1; j <= 1; j++) {
                 var p = l2d(k, n),
@@ -373,7 +376,6 @@ var lattice = (function () {
                 }
             }
         }
-        console.log(wadda)
         return { neighborsArray: wadda, neighborsObject: neighborsObject }
     }
 

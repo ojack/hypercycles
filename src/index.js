@@ -6,7 +6,7 @@ const createControls = require('./controls.js')
 const SPEED = 50
 // const SPEED = 300
 const WIDTH = 101
-// const WIDTH = 30
+// const WIDTH = 11
 
 const controlbox_width = 400,
     controlbox_height = 400,
