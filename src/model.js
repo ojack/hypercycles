@@ -64,7 +64,7 @@ console.log('species', SPECIES)
 
 
 module.exports.createModel = (w = 50, controls) => {
-    const { replication : replicationAmount, catalyticSupport: catalyticSupportAmount, decay : decayAmount } = controls.sliders
+    const { replication : replicationAmount, catalyticSupport: catalyticSupportAmount, decay : decayAmount, diffusionSteps, diffusion: diffusionAmount } = controls.sliders
     const num_parasites = Math.floor(w/3)
     let l = lattice.square(w).boundary("periodic")
     function init() {
@@ -134,6 +134,19 @@ module.exports.createModel = (w = 50, controls) => {
      Claim w = self [W] + c[W, NW] + c[W, SW] + c[W, N] + c[W, S]; Claim n = self [El + c[E, NE] + c[E, SE] + c[E, N] + c[E, S];
       */
 
+    // swap positions with a random neighbor
+    const diffusion = (node) => {
+       /// const diffusionProbability = 0.5
+        if(Math.random() < diffusionAmount.value) {
+            const n = node.neighbors[Math.floor(Math.random()*node.neighbors.length)]
+
+            const newState = node.state
+            node.state = n.state
+            n.state = newState
+        }
+
+    }
+
     const replicate = (node) => {
         let newState = node.state
         if (node.neighborsObject) {
@@ -177,6 +190,7 @@ module.exports.createModel = (w = 50, controls) => {
     }
 
     const update = () => {
+        const numDiffusionSteps = Math.round(diffusionSteps.value)
         const newNodeState = new Array(l.nodes.length)
         l.nodes.forEach((node, i) => {
             const { state } = node
@@ -190,10 +204,15 @@ module.exports.createModel = (w = 50, controls) => {
            //console.log(state, newState)
 
         })
-
         l.nodes.forEach((node, i) => {
             node.state = newNodeState[i]
         })
+
+        for(let i = 0; i < numDiffusionSteps; i ++) {
+            l.nodes.forEach((node, i) => {            
+                diffusion(node)
+            })
+        }
     }
 
     return {

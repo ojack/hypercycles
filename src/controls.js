@@ -7,7 +7,10 @@ margin = 10;
 const sliders = {
     decay: { id: "decay-slider", default: 0.2, range: [0, 1] },
     replication: { id: "replication-slider", default: 1, range: [0, 4] },
-    catalyticSupport: { id: "catalytic-support-slider", name: "catalytic support", range: [0, 300], default: 100 }
+    catalyticSupport: { id: "catalytic-support-slider", name: "catalytic support", range: [0, 300], default: 100 },
+    diffusion: { id: 'diffusion-probability-slider', name: "diffusion probability", range: [0, 1], default: 0.4 },
+    diffusionSteps: { id: 'diffusion-steps-slider', name: "diffusion steps", range: [0, 22], default: 2 }
+
 }
 
 
@@ -23,7 +26,7 @@ module.exports = ({ reset, runpause, render, addRandomParasites } = {}) => {
 
     var playblock = g.block({ x0: 2, y0: 10, width: 0, height: 0 });
     var buttonblock = g.block({x0:1,y0:7.5,width:2,height:0}).Nx(2);
-    var sliderblock = g.block({ x0: 5.5, y0: 5, width: 6, height: 3 }).Ny(3);
+    var sliderblock = g.block({ x0: 5.5, y0: 2, width: 6, height: 3 }).Ny(3);
     var switchblock = g.block({x0:6.5,y0:11,width:3,height:0}).Nx(2);
 
     // buttons
@@ -43,7 +46,7 @@ module.exports = ({ reset, runpause, render, addRandomParasites } = {}) => {
     ]
 
     var toggles = [
-        widget.toggle({id:"t1", name: "color by majority",  value: false}).update(render).label("bottom").size(10)
+        widget.toggle({id:"t1", name: "color by majority",  value: true}).update(render).label("bottom").size(10)
     ]
 
     var sliderwidth = sliderblock.w(),

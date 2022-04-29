@@ -1,14 +1,14 @@
-const SCALE = 5
+// const SCALE = 3
 
 
-module.exports = (w, h, controls) => {
+module.exports = ({ width, scale }, controls) => {
   //  const showMajority = controls.toggles[0]
     const canvas = document.createElement('canvas')
-    canvas.width = w
-    canvas.height = h
+    canvas.width = width
+    canvas.height = width
 
-    canvas.style.width = `${w*SCALE}px`
-    canvas.style.height = `${w*SCALE}px`
+    canvas.style.width = `${width*scale}px`
+    canvas.style.height = `${width*scale}px`
     canvas.style.imageRendering = 'pixelated'
     canvas.setAttribute("class", 'explorable_display')
 
@@ -19,7 +19,7 @@ module.exports = (w, h, controls) => {
       //  console.log('rendering', model, SPECIES)
         const colorFromState = (state) => model.SPECIES[state].color
 
-        const imageData = ctx.getImageData(0, 0, w, h)
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
         const data = imageData.data
       //  console.log(showMajority.value())
         const showMajority = controls.toggles[0].value()
