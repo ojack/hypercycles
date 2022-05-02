@@ -1,21 +1,21 @@
-const controlbox_width = 400,
-    controlbox_height = 400,
-    n_grid_x = 12,
-    n_grid_y = 12
-margin = 10;
+
 
 const sliders = {
     decay: { id: "decay-slider", default: 0.2, range: [0, 1] },
     replication: { id: "replication-slider", default: 1, range: [0, 4] },
     catalyticSupport: { id: "catalytic-support-slider", name: "catalytic support", range: [0, 300], default: 100 },
     diffusion: { id: 'diffusion-probability-slider', name: "diffusion probability", range: [0, 1], default: 0.4 },
-    diffusionSteps: { id: 'diffusion-steps-slider', name: "diffusion steps", range: [0, 22], default: 2 }
-
+    diffusionSteps: { id: 'diffusion-steps-slider', name: "diffusion steps", range: [0, 22], default: 0 }
 }
 
 
-module.exports = ({ reset, runpause, render, addRandomParasites } = {}) => {
+module.exports = ({ reset, runpause, render, addRandomParasites, addParasitesToCenter } = {}, { width, scale}) => {
 
+    const controlbox_width = 400,
+    controlbox_height = width*scale,
+    n_grid_x = 12,
+    n_grid_y = 14,
+    margin = 10;
     //document.body.appendChild(controlDiv)
     var controls = d3.select("#controls-container").append("svg")
         .attr("width", controlbox_width)
@@ -24,10 +24,13 @@ module.exports = ({ reset, runpause, render, addRandomParasites } = {}) => {
 
     var g = widget.grid(controlbox_width, controlbox_height, n_grid_x, n_grid_y);
 
-    var playblock = g.block({ x0: 2, y0: 10, width: 0, height: 0 });
-    var buttonblock = g.block({x0:1,y0:7.5,width:2,height:0}).Nx(2);
-    var sliderblock = g.block({ x0: 5.5, y0: 2, width: 6, height: 3 }).Ny(3);
-    var switchblock = g.block({x0:6.5,y0:11,width:3,height:0}).Nx(2);
+    var playblock = g.block({ x0: 2, y0: 11.5, width: 0, height: 0 });
+    // var buttonblock = g.block({x0:1,y0:7.5,width:2,height:0}).Nx(2);
+    
+    var buttonblock = g.block({x0:1,y0:9,width:2,height:0}).Nx(2);
+    var sliderblock = g.block({ x0: 0.5, y0: 1, width: 10, height: 2.8 }).Ny(3);
+    // var switchblock = g.block({x0:6.5,y0:11,width:3,height:0}).Nx(2);
+        var switchblock = g.block({x0:6.5,y0:8.5,width:3,height:3.5}).Ny(3);
 
     // buttons
     var playpause = { id: "b1", name: "", actions: ["play", "pause"], value: 0 };
@@ -42,11 +45,12 @@ module.exports = ({ reset, runpause, render, addRandomParasites } = {}) => {
     ]
 
     var parasiteButton = [
-        widget.button( { id:"b4", name:"add parasites", actions: ["record"], value: 0}).update(addRandomParasites),
+        widget.button( { id:"b5", name:"add parasites to center", actions: ["record"], value: 0}).label("right").update(addParasitesToCenter),
+        widget.button( { id:"b4", name:"add parasites randomly", actions: ["record"], value: 0}).label("right").update(addRandomParasites)
     ]
 
     var toggles = [
-        widget.toggle({id:"t1", name: "color by majority",  value: true}).update(render).label("bottom").size(10)
+        widget.toggle({id:"t1", name: "color by majority",  value: true}).update(render).label("right").size(10)
     ]
 
     var sliderwidth = sliderblock.w(),
@@ -77,7 +81,7 @@ module.exports = ({ reset, runpause, render, addRandomParasites } = {}) => {
 
     var bu1 = controls.selectAll(".button .others1").data(parasiteButton).enter().append(widget.buttonElement).attr("transform", function (d, i) { 
         console.log('button position', buttonblock.x(i), buttonblock.y(0), d, i)
-        return "translate(" + switchblock.x(0) + "," + switchblock.y(0) + ")" 
+        return "translate(" + switchblock.x(0) + "," + switchblock.y(i+1) + ")" 
     });
 
     var spsl = controls.selectAll(".slider").data(Object.values(sliders).map((s) => s.el).reverse()).enter().append(widget.sliderElement)
@@ -87,7 +91,7 @@ module.exports = ({ reset, runpause, render, addRandomParasites } = {}) => {
             return "translate(" + sliderblock.x(0) + "," + sliderblock.y(i) + ")" })
     
     var tg = controls.selectAll(".toggle").data(toggles).enter().append(widget.toggleElement)
-         .attr("transform",function(d,i){return "translate("+switchblock.x(1)+","+switchblock.y(0)+")"});
+         .attr("transform",function(d,i){return "translate("+switchblock.x(0)+","+switchblock.y(0)+")"});
 
     return {
         sliders: sliders,

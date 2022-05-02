@@ -50,11 +50,11 @@ const SPECIES = new Array(NUM_SPECIES + speciesStartIndex).fill(0).map((_, i) =>
         // also give catalytic support to parasite if species 1
        if ( i === 2) s.catalyticSupport[STATES.PARASITE] = 1*2
     }
-    console.log(s)
+    // console.log(s)
     return s
 })
 
-console.log('species', SPECIES)
+// console.log('species', SPECIES)
 
 // [
 //    { color: {r:255, g:255, b:255}, index: 0, replication: 0 },
@@ -66,34 +66,16 @@ console.log('species', SPECIES)
 module.exports.createModel = (w = 50, controls) => {
     const { replication : replicationAmount, catalyticSupport: catalyticSupportAmount, decay : decayAmount, diffusionSteps, diffusion: diffusionAmount } = controls.sliders
     const num_parasites = Math.floor(w/3)
+    // console.log('lattice width', w)
     let l = lattice.square(w).boundary("periodic")
+    window.lattice = l
     function init() {
         const outcomes = SPECIES.map((s) => s.index)
         const probabilities = SPECIES.map((s) => s.initialProbability)
-       // console.log(l.nodes)
+    //    console.log("lattice", l)
         // initialize node state
         l.nodes.forEach((node) => {
-            // node.state = Math.floor(Math.random()*(SPECIES.length))
-            
             node.state = getOutcomeFromProbabilities(outcomes, probabilities)
-           // console.log(outcomes, probabilities, node.state)
-            // store refences to neighbors in an object
-            // m = row and n = column
-            // for now, only calculate if node as all 8 neighbors
-            // @todo deal with edge cases
-            // const neighbors = node.neighbors
-            // if (neighbors.length >= 8) {
-            //     node.neighborsObject = {
-            //         nw: neighbors.filter((_nb) => _nb.m == node.m - 1 && _nb.n == node.n - 1)[0],
-            //         n: neighbors.filter((_nb) => _nb.m == node.m - 1 && _nb.n == node.n)[0],
-            //         ne: neighbors.filter((_nb) => _nb.m == node.m - 1 && _nb.n == node.n + 1)[0],
-            //         w: neighbors.filter((_nb) => _nb.m == node.m && _nb.n == node.n - 1)[0],
-            //         e: neighbors.filter((_nb) => _nb.m == node.m && _nb.n == node.n + 1)[0],
-            //         sw: neighbors.filter((_nb) => _nb.m == node.m + 1 && _nb.n == node.n - 1)[0],
-            //         s: neighbors.filter((_nb) => _nb.m == node.m + 1 && _nb.n == node.n)[0],
-            //         se: neighbors.filter((_nb) => _nb.m == node.m + 1 && _nb.n == node.n + 1)[0],
-            //     }
-            // }
         })
     }
 
@@ -106,6 +88,29 @@ module.exports.createModel = (w = 50, controls) => {
             let index = Math.floor(Math.random() * l.nodes.length)
             // add parasite at index
             l.nodes[index].state = STATES.PARASITE
+        }
+    }
+
+    /* 
+        Given row x and y, calculate node index
+    */
+    const indexFromCoords = (x, y, n) => y *n + x;
+
+    /* 
+        Add N parasites to the center of the lattice.
+    */
+    function addParasitesToCenter (nParasites = 50) {
+        const n = l.L*2 + 1
+        const w = Math.floor(Math.sqrt(nParasites))
+        const center = n/2
+        const corner = center - w/2 
+        for(let i = 0; i < nParasites; i++) {
+            const x = corner + (i % w)
+            const y = corner + Math.floor(i / w)
+            const index = indexFromCoords(x, y, n)
+           
+            // console.log('x+ y', x, y, i, index, l.nodes[index])
+           l.nodes[index].state = STATES.PARASITE
         }
     }
 
@@ -220,7 +225,8 @@ module.exports.createModel = (w = 50, controls) => {
         update: update,
         SPECIES: SPECIES,
         init: init,
-        addRandomParasites: addRandomParasites
+        addRandomParasites: addRandomParasites,
+        addParasitesToCenter: addParasitesToCenter
     }
 
 }

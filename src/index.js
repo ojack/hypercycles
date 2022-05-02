@@ -16,24 +16,15 @@ const config = {
         margin: 10
     }
 }
-// const REPLICATION_PROBABILITY = 0.5
-// const SPEED = 50
-// const SPEED = 300
-const WIDTH = 201
-// const WIDTH = 11
 
-// const controlbox_width = 400,
-//     controlbox_height = 400,
-//     n_grid_x = 12,
-//     n_grid_y = 12
-// margin = 10;
 
 const controls = createControls({
     runpause: runpause,
     reset: reset,
     addRandomParasites: addRandomParasites,
+    addParasitesToCenter: addParasitesToCenter,
     render: render
-})
+}, config)
 const model = createModel((config.width - 1) / 2, controls)
 const canvas = createCanvas(config, controls)
 
@@ -46,6 +37,11 @@ let interval
 
 function addRandomParasites() {
     model.addRandomParasites(60)
+    canvas.render(model)
+}
+
+function addParasitesToCenter() {
+    model.addParasitesToCenter(60)
     canvas.render(model)
 }
 
