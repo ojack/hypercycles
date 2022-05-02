@@ -1,116 +1,107 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
-const SCALE = 5
-
-
-module.exports = (w, h, controls) => {
+module.exports = ({ width, scale }, controls) => {
   //  const showMajority = controls.toggles[0]
-    const canvas = document.createElement('canvas')
-    canvas.width = w
-    canvas.height = h
+  const canvas = document.createElement('canvas')
+  canvas.width = width
+  canvas.height = width
 
-    canvas.style.width = `${w*SCALE}px`
-    canvas.style.height = `${w*SCALE}px`
-    canvas.style.imageRendering = 'pixelated'
-    canvas.setAttribute("class", 'explorable_display')
+  canvas.style.width = `${width * scale}px`
+  canvas.style.height = `${width * scale}px`
+  canvas.style.imageRendering = 'pixelated'
+  canvas.setAttribute("class", 'explorable_display')
 
-    const ctx = canvas.getContext('2d')
+  const ctx = canvas.getContext('2d')
 
-    // function that receives a model and renders it to the canvas
-    const render = (model) => {
-      //  console.log('rendering', model, SPECIES)
-        const colorFromState = (state) => model.SPECIES[state].color
+  // function that receives a model and renders it to the canvas
+  const render = (model) => {
+    const colorFromState = (state) => model.SPECIES[state].color
 
-        const imageData = ctx.getImageData(0, 0, w, h)
-        const data = imageData.data
-      //  console.log(showMajority.value())
-        const showMajority = controls.toggles[0].value()
-        console.log(showMajority)
-        const currState = model.lattice.nodes.map((node) => {
-            //console.log(node.state, colorFromState(node.state))
-            
-            let speciesIndex = node.state
-            // show color of majority of neighbors rather than actual cell state
-            if(showMajority === true) {
-                const nCount = new Array(model.SPECIES.length).fill(0)
-                node.neighbors.forEach((neighbor) => { nCount[neighbor.state]++ })
-                nCount[node.state]++
-                
-                let largest = 0
-                speciesIndex = 0
-                nCount.forEach((numSpecies, i) => {
-                    if(i != 0 && numSpecies > largest) {
-                        largest = numSpecies
-                        speciesIndex = i
-                    }
-                })
-            }
-           // console.log(nCount)
-            return colorFromState(speciesIndex)
-            //return colorFromState(node.state)
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+    const data = imageData.data
+    const showMajority = controls.toggles[0].value()
+    const currState = model.lattice.nodes.map((node) => {
+
+      let speciesIndex = node.state
+      // show color of majority of neighbors rather than actual cell state
+      if (showMajority === true) {
+        const nCount = new Array(model.SPECIES.length).fill(0)
+        node.neighbors.forEach((neighbor) => { nCount[neighbor.state]++ })
+        nCount[node.state]++
+
+        let largest = 0
+        speciesIndex = 0
+        nCount.forEach((numSpecies, i) => {
+          if (i != 0 && numSpecies > largest) {
+            largest = numSpecies
+            speciesIndex = i
+          }
         })
+      }
+      return colorFromState(speciesIndex)
+    })
 
-       // console.log('state', currState)
-        for(var i = 0; i < data.length; i += 4) {
-            data[i]     = currState[i/4].r     // red
-            data[i + 1] = currState[i/4].g // Math.random()*255; // green
-            data[i + 2] = currState[i/4].b// Math.random()*255; // blue
-            data[i + 3] = 255 // alpha
-        }
-        ctx.putImageData(imageData, 0, 0);
+    for (var i = 0; i < data.length; i += 4) {
+      data[i] = currState[i / 4].r     // red
+      data[i + 1] = currState[i / 4].g // Math.random()*255; // green
+      data[i + 2] = currState[i / 4].b// Math.random()*255; // blue
+      data[i + 3] = 255 // alpha
     }
+    ctx.putImageData(imageData, 0, 0);
+  }
 
-    return { render: render, canvas: canvas }
+  return { render: render, canvas: canvas }
 }
 },{}],2:[function(require,module,exports){
-const controlbox_width = 400,
-    controlbox_height = 400,
-    n_grid_x = 12,
-    n_grid_y = 12
-margin = 10;
-
 const sliders = {
     decay: { id: "decay-slider", default: 0.2, range: [0, 1] },
     replication: { id: "replication-slider", default: 1, range: [0, 4] },
-    catalyticSupport: { id: "catalytic-support-slider", name: "catalytic support", range: [0, 300], default: 100 }
+    catalyticSupport: { id: "catalytic-support-slider", name: "catalytic support", range: [0, 300], default: 100 },
+    diffusion: { id: 'diffusion-probability-slider', name: "diffusion probability", range: [0, 1], default: 0.4 },
+    diffusionSteps: { id: 'diffusion-steps-slider', name: "diffusion steps", range: [0, 22], default: 0 }
 }
 
+module.exports = ({ reset, runpause, render, addRandomParasites, addParasitesToCenter } = {}, { width, scale }) => {
+    const controlbox_width = 400,
+        controlbox_height = width * scale,
+        n_grid_x = 12,
+        n_grid_y = 14,
+        margin = 10;
 
-module.exports = ({ reset, runpause, render, addRandomParasites } = {}) => {
-
-    //document.body.appendChild(controlDiv)
-    var controls = d3.select("#controls-container").append("svg")
+    const controls = d3.select("#controls-container").append("svg")
         .attr("width", controlbox_width)
         .attr("height", controlbox_height)
         .attr("class", "explorable_widgets")
 
-    var g = widget.grid(controlbox_width, controlbox_height, n_grid_x, n_grid_y);
+    const g = widget.grid(controlbox_width, controlbox_height, n_grid_x, n_grid_y);
 
-    var playblock = g.block({ x0: 2, y0: 10, width: 0, height: 0 });
-    var buttonblock = g.block({x0:1,y0:7.5,width:2,height:0}).Nx(2);
-    var sliderblock = g.block({ x0: 5.5, y0: 5, width: 6, height: 3 }).Ny(3);
-    var switchblock = g.block({x0:6.5,y0:11,width:3,height:0}).Nx(2);
+    const playblock = g.block({ x0: 2, y0: 11.5, width: 0, height: 0 });
+
+    const buttonblock = g.block({ x0: 1, y0: 9, width: 2, height: 0 }).Nx(2);
+    const sliderblock = g.block({ x0: 0.5, y0: 1, width: 10, height: 2.8 }).Ny(3);
+    const switchblock = g.block({ x0: 6.5, y0: 8.5, width: 3, height: 3.5 }).Ny(3);
 
     // buttons
-    var playpause = { id: "b1", name: "", actions: ["play", "pause"], value: 0 };
+    const playpause = { id: "b1", name: "", actions: ["play", "pause"], value: 0 };
 
-    var playbutton = [
+    const playbutton = [
         widget.button(playpause).size(g.x(3)).symbolSize(0.6 * g.x(3)).update(runpause)
     ]
 
-    var buttons = [
+    const buttons = [
         widget.button({ id: "b2", name: "", actions: ["back"], value: 0 }).update(reset),
         widget.button({ id: "b3", name: "", actions: ["rewind"], value: 0 }).update(resetControls),
     ]
 
-    var parasiteButton = [
-        widget.button( { id:"b4", name:"add parasites", actions: ["record"], value: 0}).update(addRandomParasites),
+    const parasiteButton = [
+        widget.button({ id: "b5", name: "add parasites to center", actions: ["record"], value: 0 }).label("right").update(addParasitesToCenter),
+        widget.button({ id: "b4", name: "add parasites randomly", actions: ["record"], value: 0 }).label("right").update(addRandomParasites)
     ]
 
-    var toggles = [
-        widget.toggle({id:"t1", name: "color by majority",  value: false}).update(render).label("bottom").size(10)
+    const toggles = [
+        widget.toggle({ id: "t1", name: "color by majority", value: true }).update(render).label("right").size(10)
     ]
 
-    var sliderwidth = sliderblock.w(),
+    const sliderwidth = sliderblock.w(),
         handleSize = 12,
         trackSize = 8;
 
@@ -126,29 +117,23 @@ module.exports = ({ reset, runpause, render, addRandomParasites } = {}) => {
         })
     }
 
-    console.log(sliders)
-  
+    const pb = controls.selectAll(".button .playbutton").data(playbutton).enter().append(widget.buttonElement).attr("transform", function (d, i) { return "translate(" + playblock.x(0) + "," + playblock.y(i) + ")" });
 
-    var pb = controls.selectAll(".button .playbutton").data(playbutton).enter().append(widget.buttonElement).attr("transform", function (d, i) { return "translate(" + playblock.x(0) + "," + playblock.y(i) + ")" });
-
-    var bu = controls.selectAll(".button .others").data(buttons).enter().append(widget.buttonElement).attr("transform", function (d, i) { 
-        console.log('button position', buttonblock.x(i), buttonblock.y(0), d, i)
-        return "translate(" + buttonblock.x(i) + "," + buttonblock.y(0) + ")" 
+    const bu = controls.selectAll(".button .others").data(buttons).enter().append(widget.buttonElement).attr("transform", function (d, i) {
+        return "translate(" + buttonblock.x(i) + "," + buttonblock.y(0) + ")"
     });
 
-    var bu1 = controls.selectAll(".button .others1").data(parasiteButton).enter().append(widget.buttonElement).attr("transform", function (d, i) { 
-        console.log('button position', buttonblock.x(i), buttonblock.y(0), d, i)
-        return "translate(" + switchblock.x(0) + "," + switchblock.y(0) + ")" 
+    const bu1 = controls.selectAll(".button .others1").data(parasiteButton).enter().append(widget.buttonElement).attr("transform", function (d, i) {
+        return "translate(" + switchblock.x(0) + "," + switchblock.y(i + 1) + ")"
     });
 
-    var spsl = controls.selectAll(".slider").data(Object.values(sliders).map((s) => s.el).reverse()).enter().append(widget.sliderElement)
-        .attr("transform", function (d, i) { 
-            console.log('slider position', sliderblock.x(0), sliderblock.y(i), d, i)
+    const spsl = controls.selectAll(".slider").data(Object.values(sliders).map((s) => s.el).reverse()).enter().append(widget.sliderElement)
+        .attr("transform", function (d, i) {
+            return "translate(" + sliderblock.x(0) + "," + sliderblock.y(i) + ")"
+        })
 
-            return "translate(" + sliderblock.x(0) + "," + sliderblock.y(i) + ")" })
-    
-    var tg = controls.selectAll(".toggle").data(toggles).enter().append(widget.toggleElement)
-         .attr("transform",function(d,i){return "translate("+switchblock.x(1)+","+switchblock.y(0)+")"});
+    const tg = controls.selectAll(".toggle").data(toggles).enter().append(widget.toggleElement)
+        .attr("transform", function (d, i) { return "translate(" + switchblock.x(0) + "," + switchblock.y(0) + ")" });
 
     return {
         sliders: sliders,
@@ -161,26 +146,31 @@ const createCanvas = require('./canvas.js')
 const { createModel } = require('./model.js')
 const createControls = require('./controls.js')
 
-// const REPLICATION_PROBABILITY = 0.5
-const SPEED = 50
-// const SPEED = 300
-const WIDTH = 101
-// const WIDTH = 30
 
-const controlbox_width = 400,
-    controlbox_height = 400,
-    n_grid_x = 12,
-    n_grid_y = 12
-margin = 10;
+const config = {
+    speed: 50,
+    width: 161,
+    scale: 3,
+    numParasites: 60,
+    controlbox: {
+        width: 400,
+        height: 400,
+        gridX: 12,
+        gridY: 12,
+        margin: 10
+    }
+}
+
 
 const controls = createControls({
     runpause: runpause,
     reset: reset,
     addRandomParasites: addRandomParasites,
+    addParasitesToCenter: addParasitesToCenter,
     render: render
-})
-const model = createModel((WIDTH - 1) / 2, controls)
-const canvas = createCanvas(WIDTH, WIDTH, controls)
+}, config)
+const model = createModel((config.width - 1) / 2, controls)
+const canvas = createCanvas(config, controls)
 
 
 document.getElementById("display-container").appendChild(canvas.canvas)
@@ -190,7 +180,12 @@ canvas.render(model)
 let interval
 
 function addRandomParasites() {
-    model.addRandomParasites(10)
+    model.addRandomParasites(60)
+    canvas.render(model)
+}
+
+function addParasitesToCenter() {
+    model.addParasitesToCenter(60)
     canvas.render(model)
 }
 
@@ -203,7 +198,7 @@ function runpause(d) {
         interval = setInterval(() => {
             model.update()
             canvas.render(model)
-        }, SPEED)
+        }, config.speed)
     } else {
         clearInterval(interval)
     }
@@ -229,21 +224,6 @@ const STATES = {
     EMPTY: 0,
     PARASITE: 1
 }
- // when replication is the same for all species
-
-// TO DO:
-// 1. program different starting states based on paper
-// 2. deal with edge cases
-// 3. restart button
-// 4. configurable parameters: empty probability at start, replication amount
-// - add controls based on explorable styles
-// - add diffusion
-
-// QUESTIONS:
-// - how to determine amount of catalytic support? where does claim empty come from? (see results states)
-
-// const EMPTY = 0
-
 const speciesStartIndex = 2
 
 // colors and replication parameters for each species
@@ -266,54 +246,26 @@ const SPECIES = new Array(NUM_SPECIES + speciesStartIndex).fill(0).map((_, i) =>
 
         // choose one species that this species will catalyze
         const cs = i >= NUM_SPECIES + speciesStartIndex - 1 ? speciesStartIndex : i + 1
-        s.catalyticSupport[cs] = 1 
+        s.catalyticSupport[cs] = 1
 
         // also give catalytic support to parasite if species 1
-       if ( i === 2) s.catalyticSupport[STATES.PARASITE] = 1*2
+        if (i === 2) s.catalyticSupport[STATES.PARASITE] = 1 * 2
     }
-    console.log(s)
     return s
 })
 
-console.log('species', SPECIES)
-
-// [
-//    { color: {r:255, g:255, b:255}, index: 0, replication: 0 },
-//    { color: {r: 255, g: 0, b: 0}, replication: 0., index: 1 }, 
-//    { color: {r: 0, g: 255, b: 0}, replication: 0., index: 2 }, 
-//    { color: {r:0, g:0, b:255}, replication: 0., index: 3 }]
-
-
 module.exports.createModel = (w = 50, controls) => {
-    const { replication : replicationAmount, catalyticSupport: catalyticSupportAmount, decay : decayAmount } = controls.sliders
-    const num_parasites = Math.floor(w/3)
-    let l = lattice.square(w)
+    const { replication: replicationAmount, catalyticSupport: catalyticSupportAmount, decay: decayAmount, diffusionSteps, diffusion: diffusionAmount } = controls.sliders
+    const num_parasites = Math.floor(w / 3)
+    let l = lattice.square(w).boundary("periodic")
+    window.lattice = l
     function init() {
         const outcomes = SPECIES.map((s) => s.index)
         const probabilities = SPECIES.map((s) => s.initialProbability)
+
         // initialize node state
         l.nodes.forEach((node) => {
-            // node.state = Math.floor(Math.random()*(SPECIES.length))
-            
             node.state = getOutcomeFromProbabilities(outcomes, probabilities)
-           // console.log(outcomes, probabilities, node.state)
-            // store refences to neighbors in an object
-            // m = row and n = column
-            // for now, only calculate if node as all 8 neighbors
-            // @todo deal with edge cases
-            const neighbors = node.neighbors
-            if (neighbors.length >= 8) {
-                node.neighborsObject = {
-                    nw: neighbors.filter((_nb) => _nb.m == node.m - 1 && _nb.n == node.n - 1)[0],
-                    n: neighbors.filter((_nb) => _nb.m == node.m - 1 && _nb.n == node.n)[0],
-                    ne: neighbors.filter((_nb) => _nb.m == node.m - 1 && _nb.n == node.n + 1)[0],
-                    w: neighbors.filter((_nb) => _nb.m == node.m && _nb.n == node.n - 1)[0],
-                    e: neighbors.filter((_nb) => _nb.m == node.m && _nb.n == node.n + 1)[0],
-                    sw: neighbors.filter((_nb) => _nb.m == node.m + 1 && _nb.n == node.n - 1)[0],
-                    s: neighbors.filter((_nb) => _nb.m == node.m + 1 && _nb.n == node.n)[0],
-                    se: neighbors.filter((_nb) => _nb.m == node.m + 1 && _nb.n == node.n + 1)[0],
-                }
-            }
         })
     }
 
@@ -321,10 +273,31 @@ module.exports.createModel = (w = 50, controls) => {
         l.nodes[index].state = STATES.PARASITE
     }
 
-    function addRandomParasites (nParasites = 50) {
-        for(let i = 0; i < nParasites; i++) {
+    function addRandomParasites(nParasites = 50) {
+        for (let i = 0; i < nParasites; i++) {
             let index = Math.floor(Math.random() * l.nodes.length)
             // add parasite at index
+            l.nodes[index].state = STATES.PARASITE
+        }
+    }
+
+    /* 
+        Given row x and y, calculate node index
+    */
+    const indexFromCoords = (x, y, n) => y * n + x;
+
+    /* 
+        Add N parasites to the center of the lattice.
+    */
+    function addParasitesToCenter(nParasites = 50) {
+        const n = l.L * 2 + 1
+        const w = Math.floor(Math.sqrt(nParasites))
+        const center = n / 2
+        const corner = center - w / 2
+        for (let i = 0; i < nParasites; i++) {
+            const x = corner + (i % w)
+            const y = corner + Math.floor(i / w)
+            const index = indexFromCoords(x, y, n)
             l.nodes[index].state = STATES.PARASITE
         }
     }
@@ -336,32 +309,28 @@ module.exports.createModel = (w = 50, controls) => {
     // from paper, c[x,y] is the catalytic support x gets from y 
     // if x is empty, gets no catalytic support from neighbors
     const c = (x, y) => {
-      //  const xS = SPECIES[x.state]
         const yS = SPECIES[y.state]
-        // console.log(x, y)
-      //   console.log(xS.catalyticSupport, y, xS.catalyticSupport[y.state])
-      return yS.catalyticSupport[x.state] ? yS.catalyticSupport[x.state] * catalyticSupportAmount.value : 0
-
-       // return xS.catalyticSupport[y.state] ? xS.catalyticSupport[y.state] * catalyticSupportAmount.value : 0
+        return yS.catalyticSupport[x.state] ? yS.catalyticSupport[x.state] * catalyticSupportAmount.value : 0
     }
-    // use "c" to refer to claims parameters as defined in paper
-    /* If the cell is empty:
-     p(empty) = Claim .,,,,/L p(N) = Claim N/Z Claims; p(S) = Claim& Claims; p(W) = Claim,/X Claims; p(E) = Claim n/Z Claims;
-     Claims (no replication);
-        In which:
-     C Claims = Claim,,,,,+ClaimN+Claims+Claimw+Claim,;
-     Claim. =self[N]+c[N,NE]+c[N,NW]+c[N,E]+c[N,WI; Claims = self [S] + c[S,SE] + c[S,SW] + $3, E] + c[S,WI;
-     Claim w = self [W] + c[W, NW] + c[W, SW] + c[W, N] + c[W, S]; Claim n = self [El + c[E, NE] + c[E, SE] + c[E, N] + c[E, S];
-      */
+
+    // swap positions with a random neighbor
+    const diffusion = (node) => {
+        if (Math.random() < diffusionAmount.value) {
+            const n = node.neighbors[Math.floor(Math.random() * node.neighbors.length)]
+            const newState = node.state
+            node.state = n.state
+            n.state = newState
+        }
+    }
 
     const replicate = (node) => {
         let newState = node.state
         if (node.neighborsObject) {
             const { n, nw, ne, w, e, sw, s, se } = node.neighborsObject
             const cN = SPECIES[n.state].replication * replicationAmount.value + c(n, ne) + c(n, nw) + c(n, w) + c(n, e)
-            const cS = SPECIES[s.state].replication * replicationAmount.value  + c(s, se) + c(s, sw) + c(s, w) + c(s, e)
-            const cE = SPECIES[e.state].replication * replicationAmount.value  + c(e, ne) + c(e, se) + c(e, n) + c(e, s)
-            const cW = SPECIES[w.state].replication * replicationAmount.value  + c(w, nw) + c(w, sw) + c(w, n) + c(w, s)
+            const cS = SPECIES[s.state].replication * replicationAmount.value + c(s, se) + c(s, sw) + c(s, w) + c(s, e)
+            const cE = SPECIES[e.state].replication * replicationAmount.value + c(e, ne) + c(e, se) + c(e, n) + c(e, s)
+            const cW = SPECIES[w.state].replication * replicationAmount.value + c(w, nw) + c(w, sw) + c(w, n) + c(w, s)
 
             const cSum = cN + cS + cE + cW + CLAIM_EMPTY
 
@@ -375,28 +344,12 @@ module.exports.createModel = (w = 50, controls) => {
             const r = Math.random()
 
             newState = getOutcomeFromProbabilities([STATES.EMPTY, n.state, s.state, e.state, w.state], [pEmpty, pN, pS, pE, pW])
-            // if(r < pEmpty) {
-            //     newState = EMPTY
-            // } else if ( r < pEmpty + pN ) {
-            //     // north neighbor replicates into this cell
-            //     newState = n.state
-            // } else if ( r < pEmpty + pN + pS ) {
-            //     newState = s.state
-            // } else if ( r < pEmpty + pN + pS + pE ) {
-            //     newState = e.state
-            // } else {
-            //     newState = w.state
-            // }
-            //console.log('claims', cN, cS, cE, cW, cSum)
-           //  console.log('probs', pEmpty, pN, pS, pE, pW)
-
         }
         return newState
-        // const sumClaims = 
-        // const pEmpty = 
     }
 
     const update = () => {
+        const numDiffusionSteps = Math.round(diffusionSteps.value)
         const newNodeState = new Array(l.nodes.length)
         l.nodes.forEach((node, i) => {
             const { state } = node
@@ -407,13 +360,17 @@ module.exports.createModel = (w = 50, controls) => {
                 newState = replicate(node)
             }
             newNodeState[i] = newState
-           //console.log(state, newState)
-
         })
-
+        
         l.nodes.forEach((node, i) => {
             node.state = newNodeState[i]
         })
+
+        for (let i = 0; i < numDiffusionSteps; i++) {
+            l.nodes.forEach((node, i) => {
+                diffusion(node)
+            })
+        }
     }
 
     return {
@@ -421,7 +378,8 @@ module.exports.createModel = (w = 50, controls) => {
         update: update,
         SPECIES: SPECIES,
         init: init,
-        addRandomParasites: addRandomParasites
+        addRandomParasites: addRandomParasites,
+        addParasitesToCenter: addParasitesToCenter
     }
 
 }
