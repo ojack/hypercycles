@@ -41,7 +41,6 @@ var lattice = (function () {
         }
 
         var boundary = function (s) {
-            console.log('setting boundary', s)
             if (typeof s !== "undefined") {
                 if (s == "dirichlet") {
                     BoundaryConditions = "dirichlet";
@@ -53,12 +52,10 @@ var lattice = (function () {
                     nodes.forEach(function (d, i) {
                         const { neighborsArray, neighborsObject } = nn_periodic(i, M)
                         d.neighbors =neighborsArray.map(function (x) { return nodes[x] });
-                        // console.log(neighborsArray, neighborsObject)
                         Object.entries(neighborsObject).forEach(([key, x]) => {
                             neighborsObject[key] = nodes[x]
                         })
                         nodes[i].neighborsObject = neighborsObject
-                        // console.log(neighborsObject,     d)
 
                     })
                 }
