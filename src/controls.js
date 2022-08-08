@@ -2,8 +2,8 @@ const sliders = {
     decay: { id: "decay-slider", default: 0.2, range: [0, 1] },
     replication: { id: "replication-slider", default: 1, range: [0, 4] },
     catalyticSupport: { id: "catalytic-support-slider", name: "catalytic support", range: [0, 300], default: 100 },
-    diffusion: { id: 'diffusion-probability-slider', name: "diffusion probability", range: [0, 1], default: 0.4 },
-    diffusionSteps: { id: 'diffusion-steps-slider', name: "diffusion steps", range: [0, 22], default: 0 }
+    // diffusion: { id: 'diffusion-probability-slider', name: "diffusion probability", range: [0, 1], default: 0.4 },
+    diffusionSteps: { id: 'diffusion-steps-slider', name: "diffusion", range: [0, 22], default: 0 }
 }
 
 module.exports = ({ reset, runpause, render, addRandomParasites, addParasitesToCenter } = {}, { width, scale }) => {
@@ -13,7 +13,7 @@ module.exports = ({ reset, runpause, render, addRandomParasites, addParasitesToC
         n_grid_y = 14,
         margin = 10;
 
-    const controls = d3.select("#controls-container").append("svg")
+    const controls = d3.select("#cxpbox_hypercycles_controls").append("svg")
         .attr("width", controlbox_width)
         .attr("height", controlbox_height)
         .attr("class", "explorable_widgets")

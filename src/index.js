@@ -17,6 +17,20 @@ const config = {
     }
 }
 
+// const config = {
+//     speed: 300,
+//     width: 40,
+//     scale: 10,
+//     numParasites: 60,
+//     controlbox: {
+//         width: 400,
+//         height: 400,
+//         gridX: 12,
+//         gridY: 12,
+//         margin: 10
+//     }
+// }
+
 
 const controls = createControls({
     runpause: runpause,
@@ -29,7 +43,7 @@ const model = createModel((config.width - 1) / 2, controls)
 const canvas = createCanvas(config, controls)
 
 
-document.getElementById("display-container").appendChild(canvas.canvas)
+document.getElementById("cxpbox_hypercycles_display").appendChild(canvas.canvas)
 
 canvas.render(model)
 
