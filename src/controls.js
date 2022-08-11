@@ -24,7 +24,7 @@ module.exports = ({ reset, runpause, render, addRandomParasites, addParasitesToC
     const playblock = g.block({ x0: 2, y0: 11.5, width: 0, height: 0 });
 
     const buttonblock = g.block({ x0: 1, y0: 9, width: 2, height: 0 }).Nx(2);
-    const sliderblock = g.block({ x0: 0.5, y0: 1.4, width: 4, height: 3.1 }).Ny(3);
+    const sliderblock = g.block({ x0: 0.5, y0: 1, width: 4, height: 2.8 }).Ny(3);
     const switchblock = g.block({ x0: 6.5, y0: 8.5, width: 3, height: 3.5 }).Ny(3);
     const radioblock = g.block({x0:8,y0:0.5,width:0,height:6});
 
