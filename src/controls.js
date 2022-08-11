@@ -3,7 +3,8 @@ const sliders = {
     replication: { id: "replication-slider", default: 1, range: [0, 4] },
     catalyticSupport: { id: "catalytic-support-slider", name: "catalytic support", range: [0, 300], default: 100 },
     // diffusion: { id: 'diffusion-probability-slider', name: "diffusion probability", range: [0, 1], default: 0.4 },
-    diffusionSteps: { id: 'diffusion-steps-slider', name: "diffusion", range: [0, 22], default: 0 }
+    diffusionSteps: { id: 'diffusion-steps-slider', name: "diffusion", range: [0, 22], default: 0 },
+    initialDensity: { id: 'density-slider', name: 'initial density', range: [0.005, 0.7], default: 0.5}
 }
 
 module.exports = ({ reset, runpause, render, addRandomParasites, addParasitesToCenter } = {}, { width, scale }) => {
@@ -23,8 +24,10 @@ module.exports = ({ reset, runpause, render, addRandomParasites, addParasitesToC
     const playblock = g.block({ x0: 2, y0: 11.5, width: 0, height: 0 });
 
     const buttonblock = g.block({ x0: 1, y0: 9, width: 2, height: 0 }).Nx(2);
-    const sliderblock = g.block({ x0: 0.5, y0: 1, width: 10, height: 2.8 }).Ny(3);
+    const sliderblock = g.block({ x0: 0.5, y0: 1.4, width: 4, height: 3.1 }).Ny(3);
     const switchblock = g.block({ x0: 6.5, y0: 8.5, width: 3, height: 3.5 }).Ny(3);
+    const radioblock = g.block({x0:8,y0:0.5,width:0,height:6});
+
 
     // buttons
     const playpause = { id: "b1", name: "", actions: ["play", "pause"], value: 0 };
@@ -34,7 +37,7 @@ module.exports = ({ reset, runpause, render, addRandomParasites, addParasitesToC
     ]
 
     const buttons = [
-        widget.button({ id: "b2", name: "", actions: ["back"], value: 0 }).update(reset),
+        widget.button({ id: "b2", name: "", actions: ["back"], value: 0 }).update(() => { reset(radioData[radioOptions.value].val)}),
         widget.button({ id: "b3", name: "", actions: ["rewind"], value: 0 }).update(resetControls),
     ]
 
@@ -45,6 +48,16 @@ module.exports = ({ reset, runpause, render, addRandomParasites, addParasitesToC
 
     const toggles = [
         widget.toggle({ id: "t1", name: "color by majority", value: true }).update(render).label("right").size(10)
+    ]
+
+    const radioData =  [2, 3, 4, 5, 6, 9, 11].map((v) => ({label: `${v} species`, val: v}))
+    const radioOptions = { id: "c1", name: "Select number of species", choices: radioData.map((v) => v.label), value: 1}
+
+    const radios = [
+        widget.radio(radioOptions).size(radioblock.h()).label("right").shape("rect").update((e) => {
+            reset(radioData[radioOptions.value].val)
+            // console.log('radio updated', e.value, radioOptions.value)
+        })
     ]
 
     const sliderwidth = sliderblock.w(),
@@ -81,6 +94,8 @@ module.exports = ({ reset, runpause, render, addRandomParasites, addParasitesToC
     const tg = controls.selectAll(".toggle").data(toggles).enter().append(widget.toggleElement)
         .attr("transform", function (d, i) { return "translate(" + switchblock.x(0) + "," + switchblock.y(0) + ")" });
 
+        var rad = controls.selectAll(".radio .input").data(radios).enter().append(widget.radioElement)
+        .attr("transform",function(d,i){return "translate("+radioblock.x(0)+","+radioblock.y(0)+")"});	
     return {
         sliders: sliders,
         buttons: buttons,

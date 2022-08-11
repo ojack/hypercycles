@@ -50,12 +50,12 @@ canvas.render(model)
 let interval
 
 function addRandomParasites() {
-    model.addRandomParasites(60)
+    model.addRandomParasites(30)
     canvas.render(model)
 }
 
 function addParasitesToCenter() {
-    model.addParasitesToCenter(60)
+    model.addParasitesToCenter(30)
     canvas.render(model)
 }
 
@@ -74,8 +74,8 @@ function runpause(d) {
     }
 }
 
-function reset(e) {
-    model.init()
+function reset(numSpecies = 9) {
+    model.init(numSpecies)
     canvas.render(model)
 }
 

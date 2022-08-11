@@ -13,7 +13,8 @@ module.exports = ({ width, scale }, controls) => {
 
   // function that receives a model and renders it to the canvas
   const render = (model) => {
-    const colorFromState = (state) => model.SPECIES[state].color
+    const SPECIES = model.SPECIES()
+    const colorFromState = (state) => SPECIES[state].color
 
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
     const data = imageData.data
@@ -23,7 +24,7 @@ module.exports = ({ width, scale }, controls) => {
       let speciesIndex = node.state
       // show color of majority of neighbors rather than actual cell state
       if (showMajority === true) {
-        const nCount = new Array(model.SPECIES.length).fill(0)
+        const nCount = new Array(SPECIES.length).fill(0)
         node.neighbors.forEach((neighbor) => { nCount[neighbor.state]++ })
         nCount[node.state]++
 

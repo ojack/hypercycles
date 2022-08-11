@@ -2,8 +2,6 @@ const { HSLToRGB, getOutcomeFromProbabilities } = require('./util.js')
 
 const CLAIM_EMPTY = 11
 
-const NUM_SPECIES = 9
-
 const STATES = {
     EMPTY: 0,
     PARASITE: 1
@@ -11,7 +9,7 @@ const STATES = {
 const speciesStartIndex = 2
 
 // colors and replication parameters for each species
-const SPECIES = new Array(NUM_SPECIES + speciesStartIndex).fill(0).map((_, i) => {
+const createSpeciesArray = (numSpecies = 9) => new Array(numSpecies + speciesStartIndex).fill(0).map((_, i) => {
     // initial state, catalyticSupport is an object containing the other species that this molecule will help catalyze
     const s = { index: i, catalyticSupport: {} }
     // first state is "EMPTY" state
@@ -24,12 +22,17 @@ const SPECIES = new Array(NUM_SPECIES + speciesStartIndex).fill(0).map((_, i) =>
         s.replication = 1
         s.initialProbability = 0
     } else {
-        s.color = HSLToRGB(255 * (i - speciesStartIndex) / NUM_SPECIES, 100, 50)
+       // s.color = HSLToRGB(255 * (i - speciesStartIndex) / numSpecies, 100, 50)
+       const index = (i - speciesStartIndex) / (numSpecies)
+        const color =  d3.interpolateRainbow(index)
+        const c = color.replace('rgb(', '').replace(')', '').split(',').map((s) => parseFloat(s))
+        s.color = { r: c[0], g: c[1], b: c[2]}
+       console.log('color', s.color, c, index)
         s.replication = 1
-        s.initialProbability = 0.5 / NUM_SPECIES
+        s.initialProbability = 0.5 / numSpecies
 
         // choose one species that this species will catalyze
-        const cs = i >= NUM_SPECIES + speciesStartIndex - 1 ? speciesStartIndex : i + 1
+        const cs = i >= numSpecies + speciesStartIndex - 1 ? speciesStartIndex : i + 1
         s.catalyticSupport[cs] = 1
 
         // also give catalytic support to parasite if species 1
@@ -39,11 +42,17 @@ const SPECIES = new Array(NUM_SPECIES + speciesStartIndex).fill(0).map((_, i) =>
 })
 
 module.exports.createModel = (w = 50, controls) => {
-    const { replication: replicationAmount, catalyticSupport: catalyticSupportAmount, decay: decayAmount, diffusionSteps, diffusion: diffusionAmount } = controls.sliders
+    const { replication: replicationAmount, catalyticSupport: catalyticSupportAmount, decay: decayAmount, diffusionSteps, /*diffusion: diffusionAmount*/} = controls.sliders
+    const diffusionAmount = { value: 0.4 }
     const num_parasites = Math.floor(w / 3)
     let l = lattice.square(w).boundary("periodic")
+    let SPECIES
+
     window.lattice = l
-    function init() {
+    function init(numSpecies = 9) {
+        SPECIES = createSpeciesArray(numSpecies)
+        console.log('initing with', numSpecies, SPECIES)
+
         const outcomes = SPECIES.map((s) => s.index)
         const probabilities = SPECIES.map((s) => s.initialProbability)
 
@@ -160,7 +169,7 @@ module.exports.createModel = (w = 50, controls) => {
     return {
         lattice: l,
         update: update,
-        SPECIES: SPECIES,
+        SPECIES: () => SPECIES,
         init: init,
         addRandomParasites: addRandomParasites,
         addParasitesToCenter: addParasitesToCenter
