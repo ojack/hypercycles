@@ -14,7 +14,8 @@ module.exports = ({ width, scale }, controls) => {
 
   // function that receives a model and renders it to the canvas
   const render = (model) => {
-    const colorFromState = (state) => model.SPECIES[state].color
+    const SPECIES = model.SPECIES()
+    const colorFromState = (state) => SPECIES[state].color
 
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
     const data = imageData.data
@@ -24,7 +25,7 @@ module.exports = ({ width, scale }, controls) => {
       let speciesIndex = node.state
       // show color of majority of neighbors rather than actual cell state
       if (showMajority === true) {
-        const nCount = new Array(model.SPECIES.length).fill(0)
+        const nCount = new Array(SPECIES.length).fill(0)
         node.neighbors.forEach((neighbor) => { nCount[neighbor.state]++ })
         nCount[node.state]++
 
@@ -57,7 +58,8 @@ const sliders = {
     replication: { id: "replication-slider", default: 1, range: [0, 4] },
     catalyticSupport: { id: "catalytic-support-slider", name: "catalytic support", range: [0, 300], default: 100 },
     // diffusion: { id: 'diffusion-probability-slider', name: "diffusion probability", range: [0, 1], default: 0.4 },
-    diffusionSteps: { id: 'diffusion-steps-slider', name: "diffusion", range: [0, 22], default: 0 }
+    diffusionSteps: { id: 'diffusion-steps-slider', name: "diffusion", range: [0, 22], default: 0 },
+    initialDensity: { id: 'density-slider', name: 'initial density', range: [0.005, 0.7], default: 0.5}
 }
 
 module.exports = ({ reset, runpause, render, addRandomParasites, addParasitesToCenter } = {}, { width, scale }) => {
@@ -77,8 +79,10 @@ module.exports = ({ reset, runpause, render, addRandomParasites, addParasitesToC
     const playblock = g.block({ x0: 2, y0: 11.5, width: 0, height: 0 });
 
     const buttonblock = g.block({ x0: 1, y0: 9, width: 2, height: 0 }).Nx(2);
-    const sliderblock = g.block({ x0: 0.5, y0: 1.4, width: 10, height: 3.1 }).Ny(3);
+    const sliderblock = g.block({ x0: 0.5, y0: 1, width: 4, height: 2.8 }).Ny(3);
     const switchblock = g.block({ x0: 6.5, y0: 8.5, width: 3, height: 3.5 }).Ny(3);
+    const radioblock = g.block({x0:8,y0:0.5,width:0,height:6});
+
 
     // buttons
     const playpause = { id: "b1", name: "", actions: ["play", "pause"], value: 0 };
@@ -88,7 +92,7 @@ module.exports = ({ reset, runpause, render, addRandomParasites, addParasitesToC
     ]
 
     const buttons = [
-        widget.button({ id: "b2", name: "", actions: ["back"], value: 0 }).update(reset),
+        widget.button({ id: "b2", name: "", actions: ["back"], value: 0 }).update(() => { reset(radioData[radioOptions.value].val)}),
         widget.button({ id: "b3", name: "", actions: ["rewind"], value: 0 }).update(resetControls),
     ]
 
@@ -99,6 +103,16 @@ module.exports = ({ reset, runpause, render, addRandomParasites, addParasitesToC
 
     const toggles = [
         widget.toggle({ id: "t1", name: "color by majority", value: true }).update(render).label("right").size(10)
+    ]
+
+    const radioData =  [2, 3, 4, 5, 6, 9, 11].map((v) => ({label: `${v} species`, val: v}))
+    const radioOptions = { id: "c1", name: "Select number of species", choices: radioData.map((v) => v.label), value: 1}
+
+    const radios = [
+        widget.radio(radioOptions).size(radioblock.h()).label("right").shape("rect").update((e) => {
+            reset(radioData[radioOptions.value].val)
+            // console.log('radio updated', e.value, radioOptions.value)
+        })
     ]
 
     const sliderwidth = sliderblock.w(),
@@ -135,6 +149,8 @@ module.exports = ({ reset, runpause, render, addRandomParasites, addParasitesToC
     const tg = controls.selectAll(".toggle").data(toggles).enter().append(widget.toggleElement)
         .attr("transform", function (d, i) { return "translate(" + switchblock.x(0) + "," + switchblock.y(0) + ")" });
 
+        var rad = controls.selectAll(".radio .input").data(radios).enter().append(widget.radioElement)
+        .attr("transform",function(d,i){return "translate("+radioblock.x(0)+","+radioblock.y(0)+")"});	
     return {
         sliders: sliders,
         buttons: buttons,
@@ -194,12 +210,12 @@ canvas.render(model)
 let interval
 
 function addRandomParasites() {
-    model.addRandomParasites(60)
+    model.addRandomParasites(30)
     canvas.render(model)
 }
 
 function addParasitesToCenter() {
-    model.addParasitesToCenter(60)
+    model.addParasitesToCenter(30)
     canvas.render(model)
 }
 
@@ -218,8 +234,8 @@ function runpause(d) {
     }
 }
 
-function reset(e) {
-    model.init()
+function reset(numSpecies = 9) {
+    model.init(numSpecies)
     canvas.render(model)
 }
 
@@ -232,49 +248,59 @@ const { HSLToRGB, getOutcomeFromProbabilities } = require('./util.js')
 
 const CLAIM_EMPTY = 11
 
-const NUM_SPECIES = 9
-
 const STATES = {
     EMPTY: 0,
     PARASITE: 1
 }
 const speciesStartIndex = 2
 
-// colors and replication parameters for each species
-const SPECIES = new Array(NUM_SPECIES + speciesStartIndex).fill(0).map((_, i) => {
-    // initial state, catalyticSupport is an object containing the other species that this molecule will help catalyze
-    const s = { index: i, catalyticSupport: {} }
-    // first state is "EMPTY" state
-    if (i === STATES.EMPTY) {
-        s.color = { r: 255, g: 255, b: 255 }
-        s.replication = 0
-        s.initialProbability = 0.5
-    } else if (i === STATES.PARASITE) { // parasite state
-        s.color = { r: 0, g: 0, b: 0 }
-        s.replication = 1
-        s.initialProbability = 0
-    } else {
-        s.color = HSLToRGB(255 * (i - speciesStartIndex) / NUM_SPECIES, 100, 50)
-        s.replication = 1
-        s.initialProbability = 0.5 / NUM_SPECIES
 
-        // choose one species that this species will catalyze
-        const cs = i >= NUM_SPECIES + speciesStartIndex - 1 ? speciesStartIndex : i + 1
-        s.catalyticSupport[cs] = 1
-
-        // also give catalytic support to parasite if species 1
-        if (i === 2) s.catalyticSupport[STATES.PARASITE] = 1 * 2
-    }
-    return s
-})
 
 module.exports.createModel = (w = 50, controls) => {
-    const { replication: replicationAmount, catalyticSupport: catalyticSupportAmount, decay: decayAmount, diffusionSteps, /*diffusion: diffusionAmount*/} = controls.sliders
+    const { initialDensity, replication: replicationAmount, catalyticSupport: catalyticSupportAmount, decay: decayAmount, diffusionSteps, /*diffusion: diffusionAmount*/ } = controls.sliders
     const diffusionAmount = { value: 0.4 }
     const num_parasites = Math.floor(w / 3)
     let l = lattice.square(w).boundary("periodic")
+    let SPECIES
+
+    // colors and replication parameters for each species
+    const createSpeciesArray = (numSpecies = 9) => new Array(numSpecies + speciesStartIndex).fill(0).map((_, i) => {
+        // initial state, catalyticSupport is an object containing the other species that this molecule will help catalyze
+        const s = { index: i, catalyticSupport: {} }
+        // first state is "EMPTY" state
+        if (i === STATES.EMPTY) {
+            s.color = { r: 255, g: 255, b: 255 }
+            s.replication = 0
+            s.initialProbability = 0.5
+        } else if (i === STATES.PARASITE) { // parasite state
+            s.color = { r: 0, g: 0, b: 0 }
+            s.replication = 1
+            s.initialProbability = 0
+        } else {
+            // s.color = HSLToRGB(255 * (i - speciesStartIndex) / numSpecies, 100, 50)
+            const index = (i - speciesStartIndex) / (numSpecies)
+            const color = d3.interpolateRainbow(index)
+            const c = color.replace('rgb(', '').replace(')', '').split(',').map((s) => parseFloat(s))
+            s.color = { r: c[0], g: c[1], b: c[2] }
+          //  console.log('color', s.color, c, index)
+            s.replication = 1
+            s.initialProbability = initialDensity.value / numSpecies
+
+            // choose one species that this species will catalyze
+            const cs = i >= numSpecies + speciesStartIndex - 1 ? speciesStartIndex : i + 1
+            s.catalyticSupport[cs] = 1
+
+            // also give catalytic support to parasite if species 1
+            if (i === 2) s.catalyticSupport[STATES.PARASITE] = 1 * 2
+        }
+        return s
+    })
+
     window.lattice = l
-    function init() {
+    function init(numSpecies = 9) {
+        SPECIES = createSpeciesArray(numSpecies)
+      //  console.log('initing with', numSpecies, SPECIES)
+
         const outcomes = SPECIES.map((s) => s.index)
         const probabilities = SPECIES.map((s) => s.initialProbability)
 
@@ -376,7 +402,7 @@ module.exports.createModel = (w = 50, controls) => {
             }
             newNodeState[i] = newState
         })
-        
+
         l.nodes.forEach((node, i) => {
             node.state = newNodeState[i]
         })
@@ -391,7 +417,7 @@ module.exports.createModel = (w = 50, controls) => {
     return {
         lattice: l,
         update: update,
-        SPECIES: SPECIES,
+        SPECIES: () => SPECIES,
         init: init,
         addRandomParasites: addRandomParasites,
         addParasitesToCenter: addParasitesToCenter
