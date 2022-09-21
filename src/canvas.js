@@ -25,7 +25,7 @@ module.exports = ({ width, scale }, controls) => {
     let speciesIndex = node.state
     let numEmpty = 0
       // show color of majority of neighbors rather than actual cell state
-      if (showMajority === true) {
+      if (showMajority === true && node.state === 0) {
         const nCount = new Array(SPECIES.length).fill(0)
         node.neighbors.forEach((neighbor) => { nCount[neighbor.state]++ })
         nCount[node.state]++
@@ -42,7 +42,7 @@ module.exports = ({ width, scale }, controls) => {
           }
         })
       }
-      return Object.assign({}, colorFromState(speciesIndex), { a: 255 * (8 - numEmpty)/8})
+      return Object.assign({}, colorFromState(speciesIndex), { a: 255 * (12 - numEmpty)/12})
     })
 
     for (var i = 0; i < data.length; i += 4) {
