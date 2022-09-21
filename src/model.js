@@ -1,4 +1,4 @@
-const { HSLToRGB, getOutcomeFromProbabilities } = require('./util.js')
+const { HSLToRGB, RGBToHSL, getOutcomeFromProbabilities } = require('./util.js')
 
 const CLAIM_EMPTY = 11
 
@@ -47,6 +47,7 @@ module.exports.createModel = (w = 50, controls) => {
             // also give catalytic support to parasite if species 1
             if (i === 2) s.catalyticSupport[STATES.PARASITE] = 1 * 2
         }
+        s.colorHSL = RGBToHSL(s.color)
         return s
     })
 
