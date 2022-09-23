@@ -4,8 +4,10 @@ const sliders = {
     catalyticSupport: { id: "catalytic-support-slider", name: "catalytic support", range: [0, 300], default: 100 },
     // diffusion: { id: 'diffusion-probability-slider', name: "diffusion probability", range: [0, 1], default: 0.4 },
     diffusionSteps: { id: 'diffusion-steps-slider', name: "diffusion", range: [0, 22], default: 0 },
-    initialDensity: { id: 'density-slider', name: 'initial density', range: [0.005, 0.7], default: 0.5}
+    initialDensity: { id: 'density-slider', name: 'initial density', range: [0.005, 0.7], default: 0.5, value: 0.5}
 }
+
+const visibleSliders = [ 'decay', 'replication', 'catalyticSupport', 'diffusionSteps' ]
 
 module.exports = ({ reset, runpause, render, addRandomParasites, addParasitesToCenter } = {}, { width, scale }) => {
     const controlbox_width = 400,
@@ -65,14 +67,19 @@ module.exports = ({ reset, runpause, render, addRandomParasites, addParasitesToC
         handleSize = 12,
         trackSize = 8;
 
-    Object.entries(sliders).forEach(([name, slider]) => {
+    // Object.entries(sliders).forEach(([name, slider]) => {
+
+    visibleSliders.forEach((name) => {
+        const slider = sliders[name]
+        console.log(name, slider)
         !('name' in slider) && (slider.name = name)
         slider.value = slider.default
         slider.el = widget.slider(slider).width(sliderwidth).trackSize(trackSize).handleSize(handleSize)
     })
 
     function resetControls() {
-        Object.values(sliders).forEach((slider) => {
+        visibleSliders.forEach((name) =>  {
+            slider = sliders[name]
             slider.el.click(slider.default)
         })
     }
@@ -87,7 +94,7 @@ module.exports = ({ reset, runpause, render, addRandomParasites, addParasitesToC
         return "translate(" + switchblock.x(0) + "," + switchblock.y(i + 1) + ")"
     });
 
-    const spsl = controls.selectAll(".slider").data(Object.values(sliders).map((s) => s.el).reverse()).enter().append(widget.sliderElement)
+    const spsl = controls.selectAll(".slider").data(visibleSliders.map((name) => sliders[name]).map((s) => s.el).reverse()).enter().append(widget.sliderElement)
         .attr("transform", function (d, i) {
             return "translate(" + sliderblock.x(0) + "," + sliderblock.y(i) + ")"
         })
