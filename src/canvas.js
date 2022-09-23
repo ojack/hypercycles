@@ -4,6 +4,7 @@ module.exports = ({ width, scale }, controls) => {
   canvas.width = width
   canvas.height = width
 
+  canvas.style.backgroundColor = "#dfceaa"
   canvas.style.width = `${width * scale}px`
   canvas.style.height = `${width * scale}px`
   canvas.style.imageRendering = 'pixelated'

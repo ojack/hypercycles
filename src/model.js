@@ -2,6 +2,8 @@ const { HSLToRGB, RGBToHSL, getOutcomeFromProbabilities } = require('./util.js')
 
 const CLAIM_EMPTY = 11
 
+const UPDATE_PROBABILITY = 1 // overall probability that an event will happen
+
 const STATES = {
     EMPTY: 0,
     PARASITE: 1
@@ -32,12 +34,12 @@ module.exports.createModel = (w = 50, controls) => {
             s.initialProbability = 0
         } else {
             // s.color = HSLToRGB(255 * (i - speciesStartIndex) / numSpecies, 100, 50)
-            // const index = (i - speciesStartIndex) / (numSpecies)
-            // const color = d3.interpolateRainbow(index)
-            // const c = color.replace('rgb(', '').replace(')', '').split(',').map((s) => parseFloat(s))
-            // s.color = { r: c[0], g: c[1], b: c[2] }
+            const index = (i - speciesStartIndex) / (numSpecies)
+            const color = d3.interpolateRainbow(index)
+            const c = color.replace('rgb(', '').replace(')', '').split(',').map((s) => parseFloat(s))
+            s.color = { r: c[0], g: c[1], b: c[2] }
 
-            s.color = HSLToRGB(255 * (i - speciesStartIndex) / numSpecies, 50, 50)
+      //      s.color = HSLToRGB(255 * (i - speciesStartIndex) / numSpecies, 50, 50)
           //  console.log('color', s.color, c, index)
             s.replication = 1
             s.initialProbability = initialDensity.value / numSpecies
@@ -54,6 +56,16 @@ module.exports.createModel = (w = 50, controls) => {
     })
 
     window.lattice = l
+     /* 
+        Given row x and y, calculate node index
+    */
+        const indexFromCoords = (x, y, n) => y * n + x;
+
+        const coordsFromIndex = (i, n) => ({
+            x: i%n, 
+            y: Math.floor(i/n)
+        })
+
     function init(numSpecies = 9) {
         SPECIES = createSpeciesArray(numSpecies)
       //  console.log('initing with', numSpecies, SPECIES)
@@ -61,9 +73,22 @@ module.exports.createModel = (w = 50, controls) => {
         const outcomes = SPECIES.map((s) => s.index)
         const probabilities = SPECIES.map((s) => s.initialProbability)
 
+        const n = l.L * 2 + 1 // width / height of lattice
+        const center = n / 2 // center assuming square lattice
+
         // initialize node state
-        l.nodes.forEach((node) => {
-            node.state = getOutcomeFromProbabilities(outcomes, probabilities)
+        l.nodes.forEach((node, i) => {
+            const { x, y } = coordsFromIndex(i, n)
+            //const i2 = indexFromCoords(x, y, n)
+            const a = x - center
+            const b = y - center
+            const distanceFromCenter = Math.sqrt(a*a + b*b)
+           
+            if(distanceFromCenter < n/3) {
+                node.state = getOutcomeFromProbabilities(outcomes, probabilities)
+            } else {
+                node.state = STATES.EMPTY
+            }
         })
     }
 
@@ -79,11 +104,7 @@ module.exports.createModel = (w = 50, controls) => {
         }
     }
 
-    /* 
-        Given row x and y, calculate node index
-    */
-    const indexFromCoords = (x, y, n) => y * n + x;
-
+   
     /* 
         Add N parasites to the center of the lattice.
     */
@@ -154,10 +175,12 @@ module.exports.createModel = (w = 50, controls) => {
         l.nodes.forEach((node, i) => {
             const { state } = node
             let newState = state
-            if (state !== STATES.EMPTY) {
-                newState = decay(state)
-            } else {
-                newState = replicate(node)
+            if(Math.random() > (1 - UPDATE_PROBABILITY)) {
+                if (state !== STATES.EMPTY) {
+                    newState = decay(state)
+                } else {
+                    newState = replicate(node)
+                }
             }
             newNodeState[i] = newState
         })

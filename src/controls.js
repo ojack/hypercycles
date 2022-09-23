@@ -3,8 +3,8 @@ const sliders = {
     replication: { id: "replication-slider", default: 1, range: [0, 4] },
     catalyticSupport: { id: "catalytic-support-slider", name: "catalytic support", range: [0, 300], default: 100 },
     // diffusion: { id: 'diffusion-probability-slider', name: "diffusion probability", range: [0, 1], default: 0.4 },
-    diffusionSteps: { id: 'diffusion-steps-slider', name: "diffusion", range: [0, 4], default: 1 },
-    initialDensity: { id: 'density-slider', name: 'initial density', range: [0.005, 0.7], default: 0.5, value: 0.5}
+    diffusionSteps: { id: 'diffusion-steps-slider', name: "diffusion", range: [0, 4], default: 0 },
+    initialDensity: { id: 'density-slider', name: 'initial density', range: [0.005, 0.7], default: 0.6, value: 0.6}
 }
 
 const visibleSliders = [ 'decay', 'replication', 'catalyticSupport', 'diffusionSteps' ]
@@ -26,10 +26,17 @@ module.exports = ({ reset, runpause, render, addRandomParasites, addParasitesToC
 
     const playblock = g.block({ x0: 2, y0: 11.5, width: 0, height: 0 });
 
-    const buttonblock = g.block({ x0: 1, y0: 9, width: 2, height: 0 }).Nx(2);
-    const sliderblock = g.block({ x0: 0.5, y0: 1, width: 4, height: 2.8 }).Ny(3);
-    const switchblock = g.block({ x0: 6.5, y0: 8.5, width: 3, height: 3.5 }).Ny(3);
-    const radioblock = g.block({x0:8,y0:0.5,width:0,height:6});
+    // old layout
+    // const buttonblock = g.block({ x0: 1, y0: 8.5, width: 2, height: 0 }).Nx(2);
+    // const sliderblock = g.block({ x0: 0.5, y0: 1, width: 5, height: 3 }).Ny(3);
+    // const switchblock = g.block({ x0: 6.5, y0: 8.5, width: 3, height: 3.5 }).Ny(3);
+    // const radioblock = g.block({x0:8,y0:0.5,width:0,height:6});
+// 
+    const buttonblock = g.block({ x0: 1, y0: 8.5, width: 2, height: 0 }).Nx(2);
+    const sliderblock = g.block({ x0: 5.5, y0: 6.5, width: 5, height: 3.5 }).Ny(3);
+    const triggerblock = g.block({ x0: 2, y0: 3, width: 3, height: 4.5 }).Ny(3);
+    const switchblock = g.block({ x0: 1.75, y0: 2.5, width: 3, height: 2.5 }).Ny(2);
+    const radioblock = g.block({x0:6,y0:1,width:0,height:3.5}).Ny(2);
 
 
     // buttons
@@ -46,11 +53,11 @@ module.exports = ({ reset, runpause, render, addRandomParasites, addParasitesToC
 
     const parasiteButton = [
         // widget.button({ id: "b5", name: "add parasites to center", actions: ["record"], value: 0 }).label("right").update(addParasitesToCenter),
-        widget.button({ id: "b4", name: "add parasites randomly", actions: ["record"], value: 0 }).label("right").update(addRandomParasites)
+        widget.button({ id: "b4", name: "add parasites", actions: ["record"], value: 0 }).label("bottom").update(addRandomParasites)
     ]
 
     const toggles = [
-        widget.toggle({ id: "t1", name: "color by majority", value: true }).update(render).label("right").size(10)
+        widget.toggle({ id: "t1", name: "color by majority", value: true }).update(render).label("bottom").size(10)
     ]
 
     const radioData =  [3, 6, 9].map((v) => ({label: `${v} species`, val: v}))
@@ -91,7 +98,7 @@ module.exports = ({ reset, runpause, render, addRandomParasites, addParasitesToC
     });
 
     const bu1 = controls.selectAll(".button .others1").data(parasiteButton).enter().append(widget.buttonElement).attr("transform", function (d, i) {
-        return "translate(" + switchblock.x(0) + "," + switchblock.y(i + 1) + ")"
+        return "translate(" + triggerblock.x(0) + "," + triggerblock.y(i + 1) + ")"
     });
 
     const spsl = controls.selectAll(".slider").data(visibleSliders.map((name) => sliders[name]).map((s) => s.el).reverse()).enter().append(widget.sliderElement)
