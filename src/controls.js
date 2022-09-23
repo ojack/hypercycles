@@ -9,7 +9,8 @@ const sliders = {
 
 module.exports = ({ reset, runpause, render, addRandomParasites, addParasitesToCenter } = {}, { width, scale }) => {
     const controlbox_width = 400,
-        controlbox_height = width * scale,
+        // controlbox_height = width * scale,
+        controlbox_height = 400,
         n_grid_x = 12,
         n_grid_y = 14,
         margin = 10;
