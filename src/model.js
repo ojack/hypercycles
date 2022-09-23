@@ -32,10 +32,12 @@ module.exports.createModel = (w = 50, controls) => {
             s.initialProbability = 0
         } else {
             // s.color = HSLToRGB(255 * (i - speciesStartIndex) / numSpecies, 100, 50)
-            const index = (i - speciesStartIndex) / (numSpecies)
-            const color = d3.interpolateRainbow(index)
-            const c = color.replace('rgb(', '').replace(')', '').split(',').map((s) => parseFloat(s))
-            s.color = { r: c[0], g: c[1], b: c[2] }
+            // const index = (i - speciesStartIndex) / (numSpecies)
+            // const color = d3.interpolateRainbow(index)
+            // const c = color.replace('rgb(', '').replace(')', '').split(',').map((s) => parseFloat(s))
+            // s.color = { r: c[0], g: c[1], b: c[2] }
+
+            s.color = HSLToRGB(255 * (i - speciesStartIndex) / numSpecies, 50, 50)
           //  console.log('color', s.color, c, index)
             s.replication = 1
             s.initialProbability = initialDensity.value / numSpecies

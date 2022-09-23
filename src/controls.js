@@ -50,7 +50,7 @@ module.exports = ({ reset, runpause, render, addRandomParasites, addParasitesToC
         widget.toggle({ id: "t1", name: "color by majority", value: true }).update(render).label("right").size(10)
     ]
 
-    const radioData =  [2, 3, 4, 5, 6, 9, 11].map((v) => ({label: `${v} species`, val: v}))
+    const radioData =  [3, 6, 9].map((v) => ({label: `${v} species`, val: v}))
     const radioOptions = { id: "c1", name: "Select number of species", choices: radioData.map((v) => v.label), value: 5}
 
     const radios = [
