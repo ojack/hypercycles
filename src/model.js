@@ -113,11 +113,13 @@ module.exports.createModel = (w = 50, controls) => {
 
     // swap positions with a random neighbor
     const diffusion = (node) => {
-        if (Math.random() < diffusionAmount.value) {
+       if(node.state === STATES.EMPTY) {
+         if (Math.random() < diffusionAmount.value) {
             const n = node.neighbors[Math.floor(Math.random() * node.neighbors.length)]
             const newState = node.state
             node.state = n.state
             n.state = newState
+         }
         }
     }
 
