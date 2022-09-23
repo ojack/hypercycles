@@ -3,7 +3,7 @@ const sliders = {
     replication: { id: "replication-slider", default: 1, range: [0, 4] },
     catalyticSupport: { id: "catalytic-support-slider", name: "catalytic support", range: [0, 300], default: 100 },
     // diffusion: { id: 'diffusion-probability-slider', name: "diffusion probability", range: [0, 1], default: 0.4 },
-    diffusionSteps: { id: 'diffusion-steps-slider', name: "diffusion", range: [0, 22], default: 0 },
+    diffusionSteps: { id: 'diffusion-steps-slider', name: "diffusion", range: [0, 4], default: 0 },
     initialDensity: { id: 'density-slider', name: 'initial density', range: [0.005, 0.7], default: 0.5, value: 0.5}
 }
 
@@ -45,7 +45,7 @@ module.exports = ({ reset, runpause, render, addRandomParasites, addParasitesToC
     ]
 
     const parasiteButton = [
-        widget.button({ id: "b5", name: "add parasites to center", actions: ["record"], value: 0 }).label("right").update(addParasitesToCenter),
+        // widget.button({ id: "b5", name: "add parasites to center", actions: ["record"], value: 0 }).label("right").update(addParasitesToCenter),
         widget.button({ id: "b4", name: "add parasites randomly", actions: ["record"], value: 0 }).label("right").update(addRandomParasites)
     ]
 
