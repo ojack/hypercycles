@@ -43,9 +43,11 @@ module.exports = ({ width, scale }, controls) => {
             speciesIndex = i
           }
         })
+      } else {
+        numEmpty = node.state === 0? 12 :0 
       }
       return Object.assign({}, colorFromState(speciesIndex),
-        { a: node.state == 0? 255 * (8 - numEmpty) / 8: 255 })
+        { a: node.state == 0? 255 * (12 - numEmpty) / 12: 255 })
     })
 
     for (var i = 0; i < data.length; i += 4) {
