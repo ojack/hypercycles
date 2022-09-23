@@ -5,6 +5,7 @@ module.exports = ({ width, scale }, controls) => {
   canvas.width = width
   canvas.height = width
 
+  canvas.style.backgroundColor = "#dfceaa"
   canvas.style.width = `${width * scale}px`
   canvas.style.height = `${width * scale}px`
   canvas.style.imageRendering = 'pixelated'
@@ -22,7 +23,9 @@ module.exports = ({ width, scale }, controls) => {
     const showMajority = controls.toggles[0].value()
     const currState = model.lattice.nodes.map((node) => {
 
+
       let speciesIndex = node.state
+      let numEmpty = 0
       // show color of majority of neighbors rather than actual cell state
       if (showMajority === true) {
         const nCount = new Array(SPECIES.length).fill(0)
@@ -32,20 +35,26 @@ module.exports = ({ width, scale }, controls) => {
         let largest = 0
         speciesIndex = 0
         nCount.forEach((numSpecies, i) => {
-          if (i != 0 && numSpecies > largest) {
+          if (i === 0) {
+            numEmpty = numSpecies
+          } else if (numSpecies > largest) {
+            // if (numSpecies > largest) { // include empty state within color by majority
             largest = numSpecies
             speciesIndex = i
           }
         })
       }
-      return colorFromState(speciesIndex)
+      return Object.assign({}, colorFromState(speciesIndex),
+        { a: node.state == 0? 255 * (8 - numEmpty) / 8: 255 })
     })
 
     for (var i = 0; i < data.length; i += 4) {
       data[i] = currState[i / 4].r     // red
       data[i + 1] = currState[i / 4].g // Math.random()*255; // green
       data[i + 2] = currState[i / 4].b// Math.random()*255; // blue
-      data[i + 3] = 255 // alpha
+      // data[i + 3] = 255 // alpha
+      // use numEmpty in neighborhood to determine alpha
+      data[i + 3] = currState[i / 4].a
     }
     ctx.putImageData(imageData, 0, 0);
   }
@@ -58,13 +67,16 @@ const sliders = {
     replication: { id: "replication-slider", default: 1, range: [0, 4] },
     catalyticSupport: { id: "catalytic-support-slider", name: "catalytic support", range: [0, 300], default: 100 },
     // diffusion: { id: 'diffusion-probability-slider', name: "diffusion probability", range: [0, 1], default: 0.4 },
-    diffusionSteps: { id: 'diffusion-steps-slider', name: "diffusion", range: [0, 22], default: 0 },
-    initialDensity: { id: 'density-slider', name: 'initial density', range: [0.005, 0.7], default: 0.5}
+    diffusionSteps: { id: 'diffusion-steps-slider', name: "diffusion", range: [0, 4], default: 0 },
+    initialDensity: { id: 'density-slider', name: 'initial density', range: [0.005, 0.7], default: 0.6, value: 0.6}
 }
+
+const visibleSliders = [ 'decay', 'replication', 'catalyticSupport', 'diffusionSteps' ]
 
 module.exports = ({ reset, runpause, render, addRandomParasites, addParasitesToCenter } = {}, { width, scale }) => {
     const controlbox_width = 400,
-        controlbox_height = width * scale,
+        // controlbox_height = width * scale,
+        controlbox_height = 400,
         n_grid_x = 12,
         n_grid_y = 14,
         margin = 10;
@@ -78,10 +90,17 @@ module.exports = ({ reset, runpause, render, addRandomParasites, addParasitesToC
 
     const playblock = g.block({ x0: 2, y0: 11.5, width: 0, height: 0 });
 
-    const buttonblock = g.block({ x0: 1, y0: 9, width: 2, height: 0 }).Nx(2);
-    const sliderblock = g.block({ x0: 0.5, y0: 1, width: 4, height: 2.8 }).Ny(3);
-    const switchblock = g.block({ x0: 6.5, y0: 8.5, width: 3, height: 3.5 }).Ny(3);
-    const radioblock = g.block({x0:8,y0:0.5,width:0,height:6});
+    // old layout
+    // const buttonblock = g.block({ x0: 1, y0: 8.5, width: 2, height: 0 }).Nx(2);
+    // const sliderblock = g.block({ x0: 0.5, y0: 1, width: 5, height: 3 }).Ny(3);
+    // const switchblock = g.block({ x0: 6.5, y0: 8.5, width: 3, height: 3.5 }).Ny(3);
+    // const radioblock = g.block({x0:8,y0:0.5,width:0,height:6});
+// 
+    const buttonblock = g.block({ x0: 1, y0: 8.5, width: 2, height: 0 }).Nx(2);
+    const sliderblock = g.block({ x0: 5.5, y0: 6.5, width: 5, height: 3.5 }).Ny(3);
+    const triggerblock = g.block({ x0: 2, y0: 3, width: 3, height: 4.5 }).Ny(3);
+    const switchblock = g.block({ x0: 1.75, y0: 2.5, width: 3, height: 2.5 }).Ny(2);
+    const radioblock = g.block({x0:6,y0:1,width:0,height:3.5}).Ny(2);
 
 
     // buttons
@@ -97,16 +116,16 @@ module.exports = ({ reset, runpause, render, addRandomParasites, addParasitesToC
     ]
 
     const parasiteButton = [
-        widget.button({ id: "b5", name: "add parasites to center", actions: ["record"], value: 0 }).label("right").update(addParasitesToCenter),
-        widget.button({ id: "b4", name: "add parasites randomly", actions: ["record"], value: 0 }).label("right").update(addRandomParasites)
+        // widget.button({ id: "b5", name: "add parasites to center", actions: ["record"], value: 0 }).label("right").update(addParasitesToCenter),
+        widget.button({ id: "b4", name: "add parasites", actions: ["record"], value: 0 }).label("bottom").update(addRandomParasites)
     ]
 
     const toggles = [
-        widget.toggle({ id: "t1", name: "color by majority", value: true }).update(render).label("right").size(10)
+        widget.toggle({ id: "t1", name: "color by majority", value: true }).update(render).label("bottom").size(10)
     ]
 
-    const radioData =  [2, 3, 4, 5, 6, 9, 11].map((v) => ({label: `${v} species`, val: v}))
-    const radioOptions = { id: "c1", name: "Select number of species", choices: radioData.map((v) => v.label), value: 5}
+    const radioData =  [3, 6, 9].map((v) => ({label: `${v} species`, val: v}))
+    const radioOptions = { id: "c1", name: "Select number of species", choices: radioData.map((v) => v.label), value: 2}
 
     const radios = [
         widget.radio(radioOptions).size(radioblock.h()).label("right").shape("rect").update((e) => {
@@ -119,14 +138,19 @@ module.exports = ({ reset, runpause, render, addRandomParasites, addParasitesToC
         handleSize = 12,
         trackSize = 8;
 
-    Object.entries(sliders).forEach(([name, slider]) => {
+    // Object.entries(sliders).forEach(([name, slider]) => {
+
+    visibleSliders.forEach((name) => {
+        const slider = sliders[name]
+        console.log(name, slider)
         !('name' in slider) && (slider.name = name)
         slider.value = slider.default
         slider.el = widget.slider(slider).width(sliderwidth).trackSize(trackSize).handleSize(handleSize)
     })
 
     function resetControls() {
-        Object.values(sliders).forEach((slider) => {
+        visibleSliders.forEach((name) =>  {
+            slider = sliders[name]
             slider.el.click(slider.default)
         })
     }
@@ -138,10 +162,10 @@ module.exports = ({ reset, runpause, render, addRandomParasites, addParasitesToC
     });
 
     const bu1 = controls.selectAll(".button .others1").data(parasiteButton).enter().append(widget.buttonElement).attr("transform", function (d, i) {
-        return "translate(" + switchblock.x(0) + "," + switchblock.y(i + 1) + ")"
+        return "translate(" + triggerblock.x(0) + "," + triggerblock.y(i + 1) + ")"
     });
 
-    const spsl = controls.selectAll(".slider").data(Object.values(sliders).map((s) => s.el).reverse()).enter().append(widget.sliderElement)
+    const spsl = controls.selectAll(".slider").data(visibleSliders.map((name) => sliders[name]).map((s) => s.el).reverse()).enter().append(widget.sliderElement)
         .attr("transform", function (d, i) {
             return "translate(" + sliderblock.x(0) + "," + sliderblock.y(i) + ")"
         })
@@ -166,7 +190,7 @@ const createControls = require('./controls.js')
 const config = {
     speed: 50,
     width: 161,
-    scale: 3,
+    scale: 400/161,
     numParasites: 60,
     controlbox: {
         width: 400,
@@ -244,9 +268,11 @@ function reset(numSpecies = 9) {
 
 
 },{"./canvas.js":1,"./controls.js":2,"./model.js":4}],4:[function(require,module,exports){
-const { HSLToRGB, getOutcomeFromProbabilities } = require('./util.js')
+const { HSLToRGB, RGBToHSL, getOutcomeFromProbabilities } = require('./util.js')
 
 const CLAIM_EMPTY = 11
+
+const UPDATE_PROBABILITY = 1 // overall probability that an event will happen
 
 const STATES = {
     EMPTY: 0,
@@ -282,6 +308,8 @@ module.exports.createModel = (w = 50, controls) => {
             const color = d3.interpolateRainbow(index)
             const c = color.replace('rgb(', '').replace(')', '').split(',').map((s) => parseFloat(s))
             s.color = { r: c[0], g: c[1], b: c[2] }
+
+      //      s.color = HSLToRGB(255 * (i - speciesStartIndex) / numSpecies, 50, 50)
           //  console.log('color', s.color, c, index)
             s.replication = 1
             s.initialProbability = initialDensity.value / numSpecies
@@ -293,10 +321,21 @@ module.exports.createModel = (w = 50, controls) => {
             // also give catalytic support to parasite if species 1
             if (i === 2) s.catalyticSupport[STATES.PARASITE] = 1 * 2
         }
+        s.colorHSL = RGBToHSL(s.color)
         return s
     })
 
     window.lattice = l
+     /* 
+        Given row x and y, calculate node index
+    */
+        const indexFromCoords = (x, y, n) => y * n + x;
+
+        const coordsFromIndex = (i, n) => ({
+            x: i%n, 
+            y: Math.floor(i/n)
+        })
+
     function init(numSpecies = 9) {
         SPECIES = createSpeciesArray(numSpecies)
       //  console.log('initing with', numSpecies, SPECIES)
@@ -304,9 +343,22 @@ module.exports.createModel = (w = 50, controls) => {
         const outcomes = SPECIES.map((s) => s.index)
         const probabilities = SPECIES.map((s) => s.initialProbability)
 
+        const n = l.L * 2 + 1 // width / height of lattice
+        const center = n / 2 // center assuming square lattice
+
         // initialize node state
-        l.nodes.forEach((node) => {
-            node.state = getOutcomeFromProbabilities(outcomes, probabilities)
+        l.nodes.forEach((node, i) => {
+            const { x, y } = coordsFromIndex(i, n)
+            //const i2 = indexFromCoords(x, y, n)
+            const a = x - center
+            const b = y - center
+            const distanceFromCenter = Math.sqrt(a*a + b*b)
+           
+            if(distanceFromCenter < n/3) {
+                node.state = getOutcomeFromProbabilities(outcomes, probabilities)
+            } else {
+                node.state = STATES.EMPTY
+            }
         })
     }
 
@@ -322,11 +374,7 @@ module.exports.createModel = (w = 50, controls) => {
         }
     }
 
-    /* 
-        Given row x and y, calculate node index
-    */
-    const indexFromCoords = (x, y, n) => y * n + x;
-
+   
     /* 
         Add N parasites to the center of the lattice.
     */
@@ -356,11 +404,13 @@ module.exports.createModel = (w = 50, controls) => {
 
     // swap positions with a random neighbor
     const diffusion = (node) => {
-        if (Math.random() < diffusionAmount.value) {
+       if(node.state === STATES.EMPTY) {
+         if (Math.random() < diffusionAmount.value) {
             const n = node.neighbors[Math.floor(Math.random() * node.neighbors.length)]
             const newState = node.state
             node.state = n.state
             n.state = newState
+         }
         }
     }
 
@@ -395,10 +445,12 @@ module.exports.createModel = (w = 50, controls) => {
         l.nodes.forEach((node, i) => {
             const { state } = node
             let newState = state
-            if (state !== STATES.EMPTY) {
-                newState = decay(state)
-            } else {
-                newState = replicate(node)
+            if(Math.random() > (1 - UPDATE_PROBABILITY)) {
+                if (state !== STATES.EMPTY) {
+                    newState = decay(state)
+                } else {
+                    newState = replicate(node)
+                }
             }
             newNodeState[i] = newState
         })
@@ -457,6 +509,26 @@ module.exports.HSLToRGB = ( h,s,l) => {
           g = Math.round((g + m) * 255);
           b = Math.round((b + m) * 255);
     return { r, g, b }
+  }
+
+module.exports.RGBToHSL = ({r, g, b} = {}) => {
+    r /= 255;
+    g /= 255;
+    b /= 255;
+    const l = Math.max(r, g, b);
+    const s = l - Math.min(r, g, b);
+    const h = s
+      ? l === r
+        ? (g - b) / s
+        : l === g
+        ? 2 + (b - r) / s
+        : 4 + (r - g) / s
+      : 0;
+    return {
+      h: 60 * h < 0 ? 60 * h + 360 : 60 * h,
+      s: 100 * (s ? (l <= 0.5 ? s / (2 * l - s) : s / (2 - (2 * l - s))) : 0),
+      l: (100 * (2 * l - s)) / 2
+    };
   }
 
   // function that accepts an array of possible outcomes, and a set of probabilites for each outcome
