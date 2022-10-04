@@ -1,9 +1,7 @@
 const { HSLToRGB, RGBToHSL, getOutcomeFromProbabilities } = require('./util.js')
 
-const colorMap = require('./colormaps.js')
+const { speciesColor, parasiteColor, emptyColor } = require('./colormaps.js')
 const CLAIM_EMPTY = 11
-
-const UPDATE_PROBABILITY = 1 // overall probability that an event will happen
 
 const STATES = {
     EMPTY: 0,
@@ -27,17 +25,17 @@ module.exports.createModel = (w = 50, controls) => {
         const s = { index: i, catalyticSupport: {} }
         // first state is "EMPTY" state
         if (i === STATES.EMPTY) {
-            s.color = { r: 255, g: 255, b: 255 }
+            s.color = emptyColor
             s.replication = 0
-            s.initialProbability = 0.5
+            s.initialProbability = 0.1
         } else if (i === STATES.PARASITE) { // parasite state
-            s.color = { r: 0, g: 0, b: 0 }
+            s.color = parasiteColor
             s.replication = 1
             s.initialProbability = 0
         } else {
             // generate species color from colormap
             // const index = () / (numSpecies)
-            s.color = colorMap(i - speciesStartIndex, numSpecies)
+            s.color = speciesColor(i - speciesStartIndex, numSpecies)
             s.replication = 1
             s.initialProbability = initialDensity.value / numSpecies
 

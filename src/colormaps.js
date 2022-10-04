@@ -1,17 +1,34 @@
 const chroma = require('chroma-js')
+const { colors } = require('./config.js')
 
-module.exports = (index = 0, numSpecies = 9) => {
- const color = d3.interpolateRainbow(index/numSpecies)
+const colorToObj = (color) => {
+  const c0 = chroma(color)
+  const c = c0['_rgb']
+  return  { r: c[0], g: c[1], b: c[2] }
+}
+
+const colorMaps = {
+  'd3': (index, numSpecies, id) => d3[id](index/numSpecies),
+  'crameri': (index, numSpecies, id) => crameri[id][numSpecies + 1][index]
+}
+
+module.exports.speciesColor = (index = 0, numSpecies = 9) => {
+  const { id, type } = colors.speciesColorMap
+  const color = colorMaps[type](index, numSpecies, id)
+// const color = d3.interpolateRainbow(index/numSpecies)
   // const color = crameri['romaO'][numSpecies+1][index]
   //const color = crameri['brocO'][numSpecies+1][index]
   // const color = d3.interpolateSinebow(index/numSpecies)
-  console.log('hex', color, index)
- // const c = color.replace('rgb(', '').replace(')', '').split(',').map((s) => parseFloat(s))
-  const c0 = chroma(color)
-  console.log('color', c0)
-  const c = c0['_rgb']
-  return { r: c[0], g: c[1], b: c[2] }
+//   console.log('hex', color, index)
+//  // const c = color.replace('rgb(', '').replace(')', '').split(',').map((s) => parseFloat(s))
+ 
+//   console.log('color', c0)
+//   const c = c0['_rgb']
+  return colorToObj(color)
 }
+
+module.exports.emptyColor = colorToObj(colors.empty)
+module.exports.parasiteColor = colorToObj(colors.parasite)
 
 // https://observablehq.com/@nitaku/fabio-crameris-color-schemes
 const crameri = {

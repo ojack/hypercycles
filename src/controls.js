@@ -4,7 +4,7 @@ const sliders = {
     catalyticSupport: { id: "catalytic-support-slider", name: "catalytic support", range: [0, 300], default: 100 },
     speed: {id: "speed-slider", name: "speed", range: [0, 1], default: 0.1},
     // diffusion: { id: 'diffusion-probability-slider', name: "diffusion probability", range: [0, 1], default: 0.4 },
-    diffusionSteps: { id: 'diffusion-steps-slider', name: "diffusion", range: [0, 4], default: 0 },
+    diffusionSteps: { id: 'diffusion-steps-slider', name: "diffusion", range: [0, 2], default: 0 },
     initialDensity: { id: 'density-slider', name: 'initial density', range: [0.005, 0.7], default: 0.6, value: 0.6}
 }
 

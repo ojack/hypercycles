@@ -1,10 +1,12 @@
+const canvasBackground = require('./config.js').colors.empty
+
 module.exports = ({ width, scale }, controls) => {
   //  const showMajority = controls.toggles[0]
   const canvas = document.createElement('canvas')
   canvas.width = width
   canvas.height = width
 
-  canvas.style.backgroundColor = "#dfceaa"
+  canvas.style.backgroundColor = canvasBackground
   canvas.style.width = `${width * scale}px`
   canvas.style.height = `${width * scale}px`
   canvas.style.imageRendering = 'pixelated'
@@ -45,6 +47,7 @@ module.exports = ({ width, scale }, controls) => {
       } else {
         numEmpty = node.state === 0? 12 :0 
       }
+      numEmpty = 0
       return Object.assign({}, colorFromState(speciesIndex),
         { a: node.state == 0? 255 * (12 - numEmpty) / 12: 255 })
     })

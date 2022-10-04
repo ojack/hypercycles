@@ -1,36 +1,7 @@
 const createCanvas = require('./canvas.js')
 const { createModel } = require('./model.js')
 const createControls = require('./controls.js')
-
-
-const config = {
-    speed: 5,
-    width: 161,
-    scale: 400/161,
-    numParasites: 60,
-    controlbox: {
-        width: 400,
-        height: 400,
-        gridX: 12,
-        gridY: 12,
-        margin: 10
-    }
-}
-
-// const config = {
-//     speed: 300,
-//     width: 40,
-//     scale: 10,
-//     numParasites: 60,
-//     controlbox: {
-//         width: 400,
-//         height: 400,
-//         gridX: 12,
-//         gridY: 12,
-//         margin: 10
-//     }
-// }
-
+const config = require('./config.js')
 
 const controls = createControls({
     runpause: runpause,
