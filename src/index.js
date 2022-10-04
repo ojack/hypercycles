@@ -4,7 +4,7 @@ const createControls = require('./controls.js')
 
 
 const config = {
-    speed: 50,
+    speed: 5,
     width: 161,
     scale: 400/161,
     numParasites: 60,

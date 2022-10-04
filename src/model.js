@@ -1,5 +1,6 @@
 const { HSLToRGB, RGBToHSL, getOutcomeFromProbabilities } = require('./util.js')
 
+const colorMap = require('./colormaps.js')
 const CLAIM_EMPTY = 11
 
 const UPDATE_PROBABILITY = 1 // overall probability that an event will happen
@@ -13,7 +14,8 @@ const speciesStartIndex = 2
 
 
 module.exports.createModel = (w = 50, controls) => {
-    const { initialDensity, replication: replicationAmount, catalyticSupport: catalyticSupportAmount, decay: decayAmount, diffusionSteps, /*diffusion: diffusionAmount*/ } = controls.sliders
+    const { initialDensity, speed: updateProbability, replication: replicationAmount, catalyticSupport: catalyticSupportAmount, decay: decayAmount, diffusionSteps, /*diffusion: diffusionAmount*/ } = controls.sliders
+    console.log('sliders', controls.sliders, updateProbability)
     const diffusionAmount = { value: 0.4 }
     const num_parasites = Math.floor(w / 3)
     let l = lattice.square(w).boundary("periodic")
@@ -33,14 +35,9 @@ module.exports.createModel = (w = 50, controls) => {
             s.replication = 1
             s.initialProbability = 0
         } else {
-            // s.color = HSLToRGB(255 * (i - speciesStartIndex) / numSpecies, 100, 50)
-            const index = (i - speciesStartIndex) / (numSpecies)
-            const color = d3.interpolateRainbow(index)
-            const c = color.replace('rgb(', '').replace(')', '').split(',').map((s) => parseFloat(s))
-            s.color = { r: c[0], g: c[1], b: c[2] }
-
-      //      s.color = HSLToRGB(255 * (i - speciesStartIndex) / numSpecies, 50, 50)
-          //  console.log('color', s.color, c, index)
+            // generate species color from colormap
+            // const index = () / (numSpecies)
+            s.color = colorMap(i - speciesStartIndex, numSpecies)
             s.replication = 1
             s.initialProbability = initialDensity.value / numSpecies
 
@@ -51,7 +48,7 @@ module.exports.createModel = (w = 50, controls) => {
             // also give catalytic support to parasite if species 1
             if (i === 2) s.catalyticSupport[STATES.PARASITE] = 1 * 2
         }
-        s.colorHSL = RGBToHSL(s.color)
+      //  s.colorHSL = RGBToHSL(s.color)
         return s
     })
 
@@ -175,7 +172,8 @@ module.exports.createModel = (w = 50, controls) => {
         l.nodes.forEach((node, i) => {
             const { state } = node
             let newState = state
-            if(Math.random() > (1 - UPDATE_PROBABILITY)) {
+          //  if(Math.random() > (1 - UPDATE_PROBABILITY)) {
+            if(Math.random() > (1 - updateProbability.value)) {
                 if (state !== STATES.EMPTY) {
                     newState = decay(state)
                 } else {
