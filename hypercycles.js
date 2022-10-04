@@ -3584,13 +3584,15 @@
 }));
 
 },{}],2:[function(require,module,exports){
+const canvasBackground = require('./config.js').colors.empty
+
 module.exports = ({ width, scale }, controls) => {
   //  const showMajority = controls.toggles[0]
   const canvas = document.createElement('canvas')
   canvas.width = width
   canvas.height = width
 
-  canvas.style.backgroundColor = "#dfceaa"
+  canvas.style.backgroundColor = canvasBackground
   canvas.style.width = `${width * scale}px`
   canvas.style.height = `${width * scale}px`
   canvas.style.imageRendering = 'pixelated'
@@ -3631,6 +3633,7 @@ module.exports = ({ width, scale }, controls) => {
       } else {
         numEmpty = node.state === 0? 12 :0 
       }
+      numEmpty = 0
       return Object.assign({}, colorFromState(speciesIndex),
         { a: node.state == 0? 255 * (12 - numEmpty) / 12: 255 })
     })
@@ -3648,21 +3651,38 @@ module.exports = ({ width, scale }, controls) => {
 
   return { render: render, canvas: canvas }
 }
-},{}],3:[function(require,module,exports){
+},{"./config.js":4}],3:[function(require,module,exports){
 const chroma = require('chroma-js')
+const { colors } = require('./config.js')
 
-module.exports = (index = 0, numSpecies = 9) => {
- const color = d3.interpolateRainbow(index/numSpecies)
+const colorToObj = (color) => {
+  const c0 = chroma(color)
+  const c = c0['_rgb']
+  return  { r: c[0], g: c[1], b: c[2] }
+}
+
+const colorMaps = {
+  'd3': (index, numSpecies, id) => d3[id](index/numSpecies),
+  'crameri': (index, numSpecies, id) => crameri[id][numSpecies + 1][index]
+}
+
+module.exports.speciesColor = (index = 0, numSpecies = 9) => {
+  const { id, type } = colors.speciesColorMap
+  const color = colorMaps[type](index, numSpecies, id)
+// const color = d3.interpolateRainbow(index/numSpecies)
   // const color = crameri['romaO'][numSpecies+1][index]
   //const color = crameri['brocO'][numSpecies+1][index]
   // const color = d3.interpolateSinebow(index/numSpecies)
-  console.log('hex', color, index)
- // const c = color.replace('rgb(', '').replace(')', '').split(',').map((s) => parseFloat(s))
-  const c0 = chroma(color)
-  console.log('color', c0)
-  const c = c0['_rgb']
-  return { r: c[0], g: c[1], b: c[2] }
+//   console.log('hex', color, index)
+//  // const c = color.replace('rgb(', '').replace(')', '').split(',').map((s) => parseFloat(s))
+ 
+//   console.log('color', c0)
+//   const c = c0['_rgb']
+  return colorToObj(color)
 }
+
+module.exports.emptyColor = colorToObj(colors.empty)
+module.exports.parasiteColor = colorToObj(colors.parasite)
 
 // https://observablehq.com/@nitaku/fabio-crameris-color-schemes
 const crameri = {
@@ -8973,14 +8993,42 @@ const crameri = {
   }
 
 
-},{"chroma-js":1}],4:[function(require,module,exports){
+},{"./config.js":4,"chroma-js":1}],4:[function(require,module,exports){
+module.exports = {
+    speed: 5,
+    width: 161,
+    scale: 400/161,
+    numParasites: 60,
+    colors: {
+        speciesColorMap: {
+            type: 'd3',
+            id: 'interpolateRainbow'
+        },
+        // speciesColorMap: {
+        //     type: 'crameri',
+        //     id: 'romaO'
+        // },
+        parasite: '#000',
+        // empty:  "#dfceaa"
+        empty: 'rgb(240, 240, 240)'
+    },
+    controlbox: {
+        width: 400,
+        height: 400,
+        gridX: 12,
+        gridY: 12,
+        margin: 10
+    }
+}
+
+},{}],5:[function(require,module,exports){
 const sliders = {
     decay: { id: "decay-slider", default: 0.2, range: [0, 1] },
     replication: { id: "replication-slider", default: 1, range: [0, 4] },
     catalyticSupport: { id: "catalytic-support-slider", name: "catalytic support", range: [0, 300], default: 100 },
     speed: {id: "speed-slider", name: "speed", range: [0, 1], default: 0.1},
     // diffusion: { id: 'diffusion-probability-slider', name: "diffusion probability", range: [0, 1], default: 0.4 },
-    diffusionSteps: { id: 'diffusion-steps-slider', name: "diffusion", range: [0, 4], default: 0 },
+    diffusionSteps: { id: 'diffusion-steps-slider', name: "diffusion", range: [0, 2], default: 0 },
     initialDensity: { id: 'density-slider', name: 'initial density', range: [0.005, 0.7], default: 0.6, value: 0.6}
 }
 
@@ -9094,40 +9142,11 @@ module.exports = ({ reset, runpause, render, addRandomParasites, addParasitesToC
         toggles: toggles
     }
 }
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 const createCanvas = require('./canvas.js')
 const { createModel } = require('./model.js')
 const createControls = require('./controls.js')
-
-
-const config = {
-    speed: 5,
-    width: 161,
-    scale: 400/161,
-    numParasites: 60,
-    controlbox: {
-        width: 400,
-        height: 400,
-        gridX: 12,
-        gridY: 12,
-        margin: 10
-    }
-}
-
-// const config = {
-//     speed: 300,
-//     width: 40,
-//     scale: 10,
-//     numParasites: 60,
-//     controlbox: {
-//         width: 400,
-//         height: 400,
-//         gridX: 12,
-//         gridY: 12,
-//         margin: 10
-//     }
-// }
-
+const config = require('./config.js')
 
 const controls = createControls({
     runpause: runpause,
@@ -9180,13 +9199,11 @@ function reset(numSpecies = 9) {
 
 
 
-},{"./canvas.js":2,"./controls.js":4,"./model.js":6}],6:[function(require,module,exports){
+},{"./canvas.js":2,"./config.js":4,"./controls.js":5,"./model.js":7}],7:[function(require,module,exports){
 const { HSLToRGB, RGBToHSL, getOutcomeFromProbabilities } = require('./util.js')
 
-const colorMap = require('./colormaps.js')
+const { speciesColor, parasiteColor, emptyColor } = require('./colormaps.js')
 const CLAIM_EMPTY = 11
-
-const UPDATE_PROBABILITY = 1 // overall probability that an event will happen
 
 const STATES = {
     EMPTY: 0,
@@ -9210,17 +9227,17 @@ module.exports.createModel = (w = 50, controls) => {
         const s = { index: i, catalyticSupport: {} }
         // first state is "EMPTY" state
         if (i === STATES.EMPTY) {
-            s.color = { r: 255, g: 255, b: 255 }
+            s.color = emptyColor
             s.replication = 0
-            s.initialProbability = 0.5
+            s.initialProbability = 0.1
         } else if (i === STATES.PARASITE) { // parasite state
-            s.color = { r: 0, g: 0, b: 0 }
+            s.color = parasiteColor
             s.replication = 1
             s.initialProbability = 0
         } else {
             // generate species color from colormap
             // const index = () / (numSpecies)
-            s.color = colorMap(i - speciesStartIndex, numSpecies)
+            s.color = speciesColor(i - speciesStartIndex, numSpecies)
             s.replication = 1
             s.initialProbability = initialDensity.value / numSpecies
 
@@ -9390,7 +9407,7 @@ module.exports.createModel = (w = 50, controls) => {
 
 
 
-},{"./colormaps.js":3,"./util.js":7}],7:[function(require,module,exports){
+},{"./colormaps.js":3,"./util.js":8}],8:[function(require,module,exports){
 module.exports.HSLToRGB = ( h,s,l) => {
     // Must be fractions of 1
     s /= 100;
@@ -9457,4 +9474,4 @@ module.exports.getOutcomeFromProbabilities = (outcomes = [], probabilities = [])
     })
     return outcomes[index]
 }
-},{}]},{},[5]);
+},{}]},{},[6]);
