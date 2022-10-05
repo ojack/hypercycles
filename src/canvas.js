@@ -45,11 +45,16 @@ module.exports = ({ width, scale }, controls) => {
           }
         })
       } else {
-        numEmpty = node.state === 0? 12 :0 
+        numEmpty = node.state === 0 ? 12 : 0
       }
-      numEmpty = 0
+     // numEmpty = 0
+      let a = 255
+      if(node.state === 0 && numEmpty > 6) a = 0
       return Object.assign({}, colorFromState(speciesIndex),
-        { a: node.state == 0? 255 * (12 - numEmpty) / 12: 255 })
+        { 
+         // a: node.state == 0 ? 255 * (12 - numEmpty) / 12 : 255 
+         a
+        })
     })
 
     for (var i = 0; i < data.length; i += 4) {
