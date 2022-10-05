@@ -3,6 +3,7 @@ module.exports = {
     width: 161,
     scale: 400/161,
     numParasites: 60,
+    fadeSpeed: 0.01, // higher is faster
     colors: {
         speciesColorMap: {
             type: 'd3',

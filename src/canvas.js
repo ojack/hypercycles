@@ -49,7 +49,10 @@ module.exports = ({ width, scale }, controls) => {
       }
      // numEmpty = 0
       let a = 255
-      if(node.state === 0 && numEmpty > 6) a = 0
+      if(node.state === 0 && numEmpty > 6) {
+        a = 255 * node.fade
+        speciesIndex = node.fadeState
+      }
       return Object.assign({}, colorFromState(speciesIndex),
         { 
          // a: node.state == 0 ? 255 * (12 - numEmpty) / 12 : 255 

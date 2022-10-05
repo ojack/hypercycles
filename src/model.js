@@ -1,5 +1,5 @@
-const { HSLToRGB, RGBToHSL, getOutcomeFromProbabilities } = require('./util.js')
-
+const { getOutcomeFromProbabilities } = require('./util.js')
+const { fadeSpeed } = require('./config.js')
 const { speciesColor, parasiteColor, emptyColor } = require('./colormaps.js')
 const CLAIM_EMPTY = 11
 
@@ -79,6 +79,9 @@ module.exports.createModel = (w = 50, controls) => {
             const b = y - center
             const distanceFromCenter = Math.sqrt(a*a + b*b)
            
+            node.prevState = STATES.EMPTY
+            node.fade = 0 // amount to fade out
+            node.fadeState = 0 // last color showing before fade
             if(distanceFromCenter < n/3) {
                 node.state = getOutcomeFromProbabilities(outcomes, probabilities)
             } else {
@@ -135,7 +138,10 @@ module.exports.createModel = (w = 50, controls) => {
          if (Math.random() < diffusionAmount.value) {
             const n = node.neighbors[Math.floor(Math.random() * node.neighbors.length)]
             const newState = node.state
+            node.prevState = node.state
             node.state = n.state
+
+            n.prevState = n.state
             n.state = newState
          }
         }
@@ -184,6 +190,7 @@ module.exports.createModel = (w = 50, controls) => {
         })
 
         l.nodes.forEach((node, i) => {
+            node.prevState = node.state
             node.state = newNodeState[i]
         })
 
@@ -192,6 +199,16 @@ module.exports.createModel = (w = 50, controls) => {
                 diffusion(node)
             })
         }
+
+        l.nodes.forEach((node, i) => {
+           // if transtitioning to empty, start fade
+           if(node.prevState !== STATES.EMPTY && node.state === STATES.EMPTY) {
+            node.fade = 1
+            node.fadeState = node.prevState
+           } else if (node.fade > 0) {
+            node.fade -= fadeSpeed
+           }
+        })
     }
 
     return {
