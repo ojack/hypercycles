@@ -46,8 +46,8 @@ module.exports = ({ parent, x, y }) => {
 
         var linkSource = { x: X(R), y: Y(noderadius()) }
         var linkTarget = {
-            x: X(1.8 * R * Math.cos(Math.PI / 4)),
-            y: Y(1.8 * R * Math.sin(Math.PI / 4) - noderadius())
+            x: X(1.8 * R * Math.cos(Math.PI / 5)),
+            y: Y(1.8 * R * Math.sin(Math.PI / 5) - noderadius())
         }
 
         var link = d3
@@ -82,7 +82,7 @@ module.exports = ({ parent, x, y }) => {
             .attr("cy", linkTarget.y)
 
         var defector = origin.append("g")
-            .attr("transform", "translate(" + X(1.8 * R * Math.cos(Math.PI / 4)) + "," + Y(1.8 * R * Math.sin(Math.PI / 4)) + ")")
+            .attr("transform", "translate(" + X(1.8 * R * Math.cos(Math.PI / 5)) + "," + Y(1.8 * R * Math.sin(Math.PI / 5)) + ")")
 
         defector.append("circle").attr("class", "head").attr("id", "defector")
             .attr("r", knobsize)
@@ -91,6 +91,7 @@ module.exports = ({ parent, x, y }) => {
 
         defector.append("circle").attr("class", "circle").attr("id", "defector")
             .attr("r", X(noderadius()))
+			.attr("stroke","rgb(100,100,100)")
 
         defector.append("path").datum(kopp).attr("d", line).attr("class", "link")
             .style("stroke", "black")

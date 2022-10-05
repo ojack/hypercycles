@@ -1,16 +1,16 @@
 const createDiagram = require('./diagram.js')
 
 const sliders = {
-    decay: { id: "decay-slider", default: 0.2, range: [0, 1] },
-    replication: { id: "replication-slider", default: 1, range: [0, 4] },
-    catalyticSupport: { id: "catalytic-support-slider", name: "catalytic support", range: [0, 300], default: 100 },
-    speed: {id: "speed-slider", name: "speed", range: [0, 1], default: 0.1},
+    decay: { id: "decay-slider", default: 0.075, range: [0, .1] },
+    replication: { id: "replication-slider", default: 0.3, range: [0, 1] },
+    catalyticSupport: { id: "catalytic-support-slider", name: "catalytic support", range: [0, 100], default: 50 },
+    speed: {id: "speed-slider", name: "speed", range: [0, 1], default: .8},
     // diffusion: { id: 'diffusion-probability-slider', name: "diffusion probability", range: [0, 1], default: 0.4 },
-    diffusionSteps: { id: 'diffusion-steps-slider', name: "diffusion", range: [0, 2], default: 0 },
+    diffusionSteps: { id: 'diffusion-steps-slider', name: "diffusion", range: [0, 1], default: 0.33 },
     initialDensity: { id: 'density-slider', name: 'initial density', range: [0.005, 0.7], default: 0.6, value: 0.6}
 }
 
-const visibleSliders = [ 'decay', 'replication', 'catalyticSupport', 'diffusionSteps', 'speed' ]
+const visibleSliders = [ 'decay', 'replication', 'catalyticSupport', 'diffusionSteps' ]
 
 module.exports = ({ reset, runpause, render, addRandomParasites, addParasitesToCenter } = {}, { width, scale }) => {
     const controlbox_width = 400,
@@ -38,9 +38,9 @@ module.exports = ({ reset, runpause, render, addRandomParasites, addParasitesToC
     // const radioblock = g.block({x0:8,y0:0.5,width:0,height:6});
     const playblock = g.block({ x0: 1.75, y0: 11.5, width: 0, height: 0 });
     const buttonblock = g.block({ x0: 0.75, y0: 8.5, width: 2, height: 0 }).Nx(2);
-    const sliderblock = g.block({ x0: 6, y0: 5.75, width: 5.25, height: 3.25 }).Ny(3);
+    const sliderblock = g.block({ x0: 6, y0: 6.75, width: 5.25, height: 3.25 }).Ny(3);
     const triggerblock = g.block({ x0: 1.75, y0: 3, width: 3, height: 4.5 }).Ny(3);
-    const switchblock = g.block({ x0: 1.5, y0: 2.5, width: 3, height: 2.5 }).Ny(2);
+    const switchblock = g.block({ x0: 1.5, y0: 1.5, width: 3, height: 2.5 }).Ny(2);
     const radioblock = g.block({x0:9.5,y0:0,width:0,height:3.5}).Ny(2);
 
     const diagramParams = { parent: controls, x: 200, y: 330}
@@ -62,7 +62,7 @@ module.exports = ({ reset, runpause, render, addRandomParasites, addParasitesToC
 
     const parasiteButton = [
         // widget.button({ id: "b5", name: "add parasites to center", actions: ["record"], value: 0 }).label("right").update(addParasitesToCenter),
-        widget.button({ id: "b4", name: "add parasites", actions: ["record"], value: 0 }).label("bottom").update(addRandomParasites)
+        widget.button({ id: "b4", name: "add parasites", actions: ["record"], value: 0 }).label("bottom").update(addRandomParasites).size(80).symbolSize(50)
     ]
 
     const toggles = [

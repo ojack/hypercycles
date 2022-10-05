@@ -4,15 +4,15 @@ module.exports = {
     scale: 400/161,
     numParasites: 60,
     colors: {
-        speciesColorMap: {
-            type: 'd3',
-            id: 'interpolateRainbow'
-        },
         // speciesColorMap: {
-        //     type: 'crameri',
-        //     id: 'romaO'
-        // },
-        parasite: '#000',
+ //            type: 'd3',
+ //            id: 'interpolateRainbow'
+ //        },
+        speciesColorMap: {
+            type: 'crameri',
+            id: 'romaO'
+        },
+        parasite: 'black',
         // empty:  "#dfceaa"
         empty: 'rgb(240, 240, 240)'
     },
