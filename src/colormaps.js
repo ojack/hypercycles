@@ -4,7 +4,7 @@ const { colors } = require('./config.js')
 const colorToObj = (color) => {
   const c0 = chroma(color)
   const c = c0['_rgb']
-  return  { r: c[0], g: c[1], b: c[2] }
+  return  { r: c[0], g: c[1], b: c[2] , hex: c0.hex() }
 }
 
 const colorMaps = {

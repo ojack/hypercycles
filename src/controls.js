@@ -1,3 +1,5 @@
+const createDiagram = require('./diagram.js')
+
 const sliders = {
     decay: { id: "decay-slider", default: 0.2, range: [0, 1] },
     replication: { id: "replication-slider", default: 1, range: [0, 4] },
@@ -27,6 +29,9 @@ module.exports = ({ reset, runpause, render, addRandomParasites, addParasitesToC
 
     const playblock = g.block({ x0: 2, y0: 11.5, width: 0, height: 0 });
 
+
+    // diagram.draw({ parent: controls, x: 200, y: 330})
+
     // old layout
     // const buttonblock = g.block({ x0: 1, y0: 8.5, width: 2, height: 0 }).Nx(2);
     // const sliderblock = g.block({ x0: 0.5, y0: 1, width: 5, height: 3 }).Ny(3);
@@ -34,10 +39,14 @@ module.exports = ({ reset, runpause, render, addRandomParasites, addParasitesToC
     // const radioblock = g.block({x0:8,y0:0.5,width:0,height:6});
 // 
     const buttonblock = g.block({ x0: 1, y0: 8.5, width: 2, height: 0 }).Nx(2);
-    const sliderblock = g.block({ x0: 5.5, y0: 5.5, width: 5, height: 3.5 }).Ny(3);
+    const sliderblock = g.block({ x0: 6.5, y0: 6, width: 5, height: 3.25 }).Ny(3);
     const triggerblock = g.block({ x0: 2, y0: 3, width: 3, height: 4.5 }).Ny(3);
     const switchblock = g.block({ x0: 1.75, y0: 2.5, width: 3, height: 2.5 }).Ny(2);
-    const radioblock = g.block({x0:6,y0:0,width:0,height:3.5}).Ny(2);
+    const radioblock = g.block({x0:9.5,y0:0,width:0,height:3.5}).Ny(2);
+
+    const diagramParams = { parent: controls, x: 200, y: 330}
+
+    const diagram = createDiagram(diagramParams)
 
 
     // buttons
@@ -115,6 +124,7 @@ module.exports = ({ reset, runpause, render, addRandomParasites, addParasitesToC
     return {
         sliders: sliders,
         buttons: buttons,
-        toggles: toggles
+        toggles: toggles,
+        updateDiagram: (SPECIES) => { diagram.draw(SPECIES) }
     }
 }

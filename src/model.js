@@ -85,6 +85,8 @@ module.exports.createModel = (w = 50, controls) => {
                 node.state = STATES.EMPTY
             }
         })
+
+        controls.updateDiagram(SPECIES.filter((s) => s.index !== STATES.EMPTY))
     }
 
     function addParasite(index) {
