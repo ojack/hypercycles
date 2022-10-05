@@ -3631,11 +3631,16 @@ module.exports = ({ width, scale }, controls) => {
           }
         })
       } else {
-        numEmpty = node.state === 0? 12 :0 
+        numEmpty = node.state === 0 ? 12 : 0
       }
-      numEmpty = 0
+     // numEmpty = 0
+      let a = 255
+      if(node.state === 0 && numEmpty > 6) a = 0
       return Object.assign({}, colorFromState(speciesIndex),
-        { a: node.state == 0? 255 * (12 - numEmpty) / 12: 255 })
+        { 
+         // a: node.state == 0 ? 255 * (12 - numEmpty) / 12 : 255 
+         a
+        })
     })
 
     for (var i = 0; i < data.length; i += 4) {
@@ -3658,7 +3663,7 @@ const { colors } = require('./config.js')
 const colorToObj = (color) => {
   const c0 = chroma(color)
   const c = c0['_rgb']
-  return  { r: c[0], g: c[1], b: c[2] }
+  return  { r: c[0], g: c[1], b: c[2] , hex: c0.hex() }
 }
 
 const colorMaps = {
@@ -9022,6 +9027,8 @@ module.exports = {
 }
 
 },{}],5:[function(require,module,exports){
+const createDiagram = require('./diagram.js')
+
 const sliders = {
     decay: { id: "decay-slider", default: 0.2, range: [0, 1] },
     replication: { id: "replication-slider", default: 1, range: [0, 4] },
@@ -9049,19 +9056,25 @@ module.exports = ({ reset, runpause, render, addRandomParasites, addParasitesToC
 
     const g = widget.grid(controlbox_width, controlbox_height, n_grid_x, n_grid_y);
 
-    const playblock = g.block({ x0: 2, y0: 11.5, width: 0, height: 0 });
+
+
+    // diagram.draw({ parent: controls, x: 200, y: 330})
 
     // old layout
     // const buttonblock = g.block({ x0: 1, y0: 8.5, width: 2, height: 0 }).Nx(2);
     // const sliderblock = g.block({ x0: 0.5, y0: 1, width: 5, height: 3 }).Ny(3);
     // const switchblock = g.block({ x0: 6.5, y0: 8.5, width: 3, height: 3.5 }).Ny(3);
     // const radioblock = g.block({x0:8,y0:0.5,width:0,height:6});
-// 
-    const buttonblock = g.block({ x0: 1, y0: 8.5, width: 2, height: 0 }).Nx(2);
-    const sliderblock = g.block({ x0: 5.5, y0: 5.5, width: 5, height: 3.5 }).Ny(3);
-    const triggerblock = g.block({ x0: 2, y0: 3, width: 3, height: 4.5 }).Ny(3);
-    const switchblock = g.block({ x0: 1.75, y0: 2.5, width: 3, height: 2.5 }).Ny(2);
-    const radioblock = g.block({x0:6,y0:0,width:0,height:3.5}).Ny(2);
+    const playblock = g.block({ x0: 1.75, y0: 11.5, width: 0, height: 0 });
+    const buttonblock = g.block({ x0: 0.75, y0: 8.5, width: 2, height: 0 }).Nx(2);
+    const sliderblock = g.block({ x0: 6, y0: 5.75, width: 5.25, height: 3.25 }).Ny(3);
+    const triggerblock = g.block({ x0: 1.75, y0: 3, width: 3, height: 4.5 }).Ny(3);
+    const switchblock = g.block({ x0: 1.5, y0: 2.5, width: 3, height: 2.5 }).Ny(2);
+    const radioblock = g.block({x0:9.5,y0:0,width:0,height:3.5}).Ny(2);
+
+    const diagramParams = { parent: controls, x: 200, y: 330}
+
+    const diagram = createDiagram(diagramParams)
 
 
     // buttons
@@ -9139,10 +9152,147 @@ module.exports = ({ reset, runpause, render, addRandomParasites, addParasitesToC
     return {
         sliders: sliders,
         buttons: buttons,
-        toggles: toggles
+        toggles: toggles,
+        updateDiagram: (SPECIES) => { diagram.draw(SPECIES) }
     }
 }
-},{}],6:[function(require,module,exports){
+},{"./diagram.js":6}],6:[function(require,module,exports){
+var world_width = 400
+var world_height = 400
+
+module.exports = ({ parent, x, y }) => {
+    var origin = parent.append("g")
+    .attr("class", "diagram")
+    .attr("transform", "translate(" + x + "," + y + ")");
+    // var origin = display
+    const draw = (species) => {
+        const speciesWithoutParasite = species.filter((s) => Object.keys(s.catalyticSupport).length > 0)
+        origin.selectAll("*").remove()
+
+        var L = 1
+        var N = speciesWithoutParasite.length
+        var R = 0.2
+        var Q = N < 5 ? 0.4 : 0.65
+        var phi = 1.4
+        var knobsize = 4;
+
+        var X = d3.scaleLinear().domain([-L, L]).range([-world_width / 2, world_width / 2]);
+        var Y = d3.scaleLinear().domain([-L, L]).range([-world_height / 2, world_height / 2]);
+        var line = d3.line().x(function (d) { return X(d.x); }).y(function (d) { return Y(d.y); });
+
+        function z() {
+            return R * (Math.cos(Q * Math.PI / N))
+        }
+
+        function noderadius() {
+            return R * Math.sin(Q * Math.PI / N)
+        }
+
+        function A() {
+            return R * Math.sin(Q * Math.PI / N) * Math.tan(phi / 2)
+        }
+
+        function D() {
+            return Math.sqrt(R * Math.sin(Q * Math.PI / N) * R * Math.sin(Q * Math.PI / N) + A() * A())
+        }
+
+        var alpha = d3.range(Q * Math.PI / N, Math.PI / N * (2 - Q), (1 - Q) * 2 * Math.PI / N / 100);
+        var beta = d3.range(-(Math.PI + phi) / 2, +(Math.PI + phi) / 2, (Math.PI + phi) / 200);
+        var circ = alpha.map(function (a) { return { x: -R + z() * Math.cos(a), y: z() * Math.sin(a) } })
+        var kopp = beta.map(function (b) { return { x: D() + A() * Math.cos(b), y: A() * Math.sin(b) } })
+
+        var nodes = d3.range(N);
+
+        var linkSource = { x: X(R), y: Y(noderadius()) }
+        var linkTarget = {
+            x: X(1.8 * R * Math.cos(Math.PI / 4)),
+            y: Y(1.8 * R * Math.sin(Math.PI / 4) - noderadius())
+        }
+
+        var link = d3
+            .linkVertical()
+            .x(d => d.x)
+            .y(d => d.y)({
+                source: linkSource,
+                target: linkTarget
+            });
+
+      
+
+        var layer0 = origin.selectAll(".kopp").data(nodes).enter().append("g").attr("class", "kopp")
+            .attr("transform", function (d, i) {
+                return "rotate(" + i * (360 / N) + ")translate(" + X(R) + ")"
+            })
+
+        var layer1 = origin.selectAll(".node").data(nodes).enter().append("g").attr("class", "node")
+            .attr("transform", function (d, i) {
+                return "rotate(" + i * (360 / N) + ")translate(" + X(R) + ")"
+            })
+
+
+        var defectorlink = origin.append('path').attr("class", "link")
+            .attr('d', link)
+            .style("stroke", "black")
+            .attr('fill', 'none');
+
+        var defectorlinkhead = origin.append("circle").attr("class", "head")
+            .attr("r", knobsize)
+            .attr("cx", linkTarget.x)
+            .attr("cy", linkTarget.y)
+
+        var defector = origin.append("g")
+            .attr("transform", "translate(" + X(1.8 * R * Math.cos(Math.PI / 4)) + "," + Y(1.8 * R * Math.sin(Math.PI / 4)) + ")")
+
+        defector.append("circle").attr("class", "head").attr("id", "defector")
+            .attr("r", knobsize)
+            .attr("cx", X(kopp[kopp.length - 1].x))
+            .attr("cy", Y(kopp[kopp.length - 1].y))
+
+        defector.append("circle").attr("class", "circle").attr("id", "defector")
+            .attr("r", X(noderadius()))
+
+        defector.append("path").datum(kopp).attr("d", line).attr("class", "link")
+            .style("stroke", "black")
+            .style("fill", "none")
+
+
+        layer1.append("circle")
+            .attr("class", "circle")
+            .attr("r", X(noderadius()))
+            .attr("cx", 0)
+            .attr("cy", 0)
+           // .style("fill", function (d, i) { return d3.interpolateRainbow(i / N) })
+           .style("fill", (d, i) => {
+            // if(speciesWithoutParasite[i].catalyticSupport[1]) return "#f00"
+            // if(speciesWithoutParasite[i].index == 3) return "#0f0"
+            return speciesWithoutParasite[i].color.hex 
+        })
+
+
+        layer1.append("path").datum(circ).attr("d", line).attr("class", "link").attr("id", "link")
+            .style("stroke", "black")
+            .style("fill", "none")
+
+
+        layer1.append("path").datum(kopp).attr("d", line).attr("class", "link").attr("id", "selflink")
+            .style("stroke", "black")
+            .style("fill", "none")
+
+
+        layer0.append("circle").attr("class", "head").attr("id", "link")
+            .attr("r", knobsize)
+            .attr("cx", X(circ[circ.length - 1].x))
+            .attr("cy", Y(circ[circ.length - 1].y))
+
+        layer0.append("circle").attr("class", "head").attr("id", "selflink")
+            .attr("r", knobsize)
+            .attr("cx", X(kopp[kopp.length - 1].x))
+            .attr("cy", Y(kopp[kopp.length - 1].y))
+    }
+
+    return { draw }
+}
+},{}],7:[function(require,module,exports){
 const createCanvas = require('./canvas.js')
 const { createModel } = require('./model.js')
 const createControls = require('./controls.js')
@@ -9199,7 +9349,7 @@ function reset(numSpecies = 9) {
 
 
 
-},{"./canvas.js":2,"./config.js":4,"./controls.js":5,"./model.js":7}],7:[function(require,module,exports){
+},{"./canvas.js":2,"./config.js":4,"./controls.js":5,"./model.js":8}],8:[function(require,module,exports){
 const { HSLToRGB, RGBToHSL, getOutcomeFromProbabilities } = require('./util.js')
 
 const { speciesColor, parasiteColor, emptyColor } = require('./colormaps.js')
@@ -9287,6 +9437,8 @@ module.exports.createModel = (w = 50, controls) => {
                 node.state = STATES.EMPTY
             }
         })
+
+        controls.updateDiagram(SPECIES.filter((s) => s.index !== STATES.EMPTY))
     }
 
     function addParasite(index) {
@@ -9407,7 +9559,7 @@ module.exports.createModel = (w = 50, controls) => {
 
 
 
-},{"./colormaps.js":3,"./util.js":8}],8:[function(require,module,exports){
+},{"./colormaps.js":3,"./util.js":9}],9:[function(require,module,exports){
 module.exports.HSLToRGB = ( h,s,l) => {
     // Must be fractions of 1
     s /= 100;
@@ -9474,4 +9626,4 @@ module.exports.getOutcomeFromProbabilities = (outcomes = [], probabilities = [])
     })
     return outcomes[index]
 }
-},{}]},{},[6]);
+},{}]},{},[7]);
