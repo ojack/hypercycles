@@ -15,6 +15,7 @@ module.exports.createModel = (w = 50, controls) => {
     const { initialDensity, speed: updateProbability, replication: replicationAmount, catalyticSupport: catalyticSupportAmount, decay: decayAmount, diffusionSteps, /*diffusion: diffusionAmount*/ } = controls.sliders
     console.log('sliders', controls.sliders, updateProbability)
     const diffusionAmount = { value: 0.4 }
+	
     const num_parasites = Math.floor(w / 3)
     let l = lattice.square(w).boundary("periodic")
     let SPECIES
