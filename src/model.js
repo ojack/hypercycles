@@ -149,12 +149,13 @@ module.exports.createModel = (w = 50, controls) => {
 
     const replicate = (node) => {
         let newState = node.state
+        let replication = replicationAmount.value
         if (node.neighborsObject) {
             const { n, nw, ne, w, e, sw, s, se } = node.neighborsObject
-            const cN = SPECIES[n.state].replication * replicationAmount.value + c(n, ne) + c(n, nw) + c(n, w) + c(n, e)
-            const cS = SPECIES[s.state].replication * replicationAmount.value + c(s, se) + c(s, sw) + c(s, w) + c(s, e)
-            const cE = SPECIES[e.state].replication * replicationAmount.value + c(e, ne) + c(e, se) + c(e, n) + c(e, s)
-            const cW = SPECIES[w.state].replication * replicationAmount.value + c(w, nw) + c(w, sw) + c(w, n) + c(w, s)
+            const cN = SPECIES[n.state].replication * replication + c(n, ne) + c(n, nw) + c(n, w) + c(n, e)
+            const cS = SPECIES[s.state].replication * replication + c(s, se) + c(s, sw) + c(s, w) + c(s, e)
+            const cE = SPECIES[e.state].replication * replication + c(e, ne) + c(e, se) + c(e, n) + c(e, s)
+            const cW = SPECIES[w.state].replication * replication + c(w, nw) + c(w, sw) + c(w, n) + c(w, s)
 
             const cSum = cN + cS + cE + cW + CLAIM_EMPTY
 
@@ -174,25 +175,28 @@ module.exports.createModel = (w = 50, controls) => {
 
     const update = () => {
         const numDiffusionSteps = Math.round(diffusionSteps.value)
-        const newNodeState = new Array(l.nodes.length)
+        const updateProb = 1 - updateProbability.value
+        const empty = STATES.EMPTY
+        // const newNodeState = new Array(l.nodes.length)
         l.nodes.forEach((node, i) => {
             const { state } = node
             let newState = state
           //  if(Math.random() > (1 - UPDATE_PROBABILITY)) {
-            if(Math.random() > (1 - updateProbability.value)) {
-                if (state !== STATES.EMPTY) {
+            if(Math.random() > updateProb) {
+                if (state !== empty) {
                     newState = decay(state)
                 } else {
                     newState = replicate(node)
                 }
             }
-            newNodeState[i] = newState
+          //  newNodeState[i] = newState
+            node.prevState = node.state
+            node.state = newState
         })
 
-        l.nodes.forEach((node, i) => {
-            node.prevState = node.state
-            node.state = newNodeState[i]
-        })
+        // l.nodes.forEach((node, i) => {
+           
+        // })
 
         for (let i = 0; i < numDiffusionSteps; i++) {
             l.nodes.forEach((node, i) => {
