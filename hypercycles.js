@@ -3631,11 +3631,19 @@ module.exports = ({ width, scale }, controls) => {
           }
         })
       } else {
-        numEmpty = node.state === 0 ? 12 : 0
+        numEmpty = node.state === 0 ? 8 : 0
       }
      // numEmpty = 0
       let a = 255
-      if(node.state === 0 && numEmpty > 6) a = 0
+
+      // fade empty pixels with few neighbors
+      if(node.state === 0 && numEmpty > 6) {
+        a = 255 * node.fade
+        speciesIndex = node.fadeState
+      } 
+      // if(numEmpty < 6) {
+      //   a = 255
+      // }
       return Object.assign({}, colorFromState(speciesIndex),
         { 
          // a: node.state == 0 ? 255 * (12 - numEmpty) / 12 : 255 
@@ -3644,12 +3652,13 @@ module.exports = ({ width, scale }, controls) => {
     })
 
     for (var i = 0; i < data.length; i += 4) {
-      data[i] = currState[i / 4].r     // red
-      data[i + 1] = currState[i / 4].g // Math.random()*255; // green
-      data[i + 2] = currState[i / 4].b// Math.random()*255; // blue
+      const { r, g, b, a} = currState[i/4]
+      data[i] = r     // red
+      data[i + 1] = g // Math.random()*255; // green
+      data[i + 2] = b// Math.random()*255; // blue
       // data[i + 3] = 255 // alpha
       // use numEmpty in neighborhood to determine alpha
-      data[i + 3] = currState[i / 4].a
+      data[i + 3] = a
     }
     ctx.putImageData(imageData, 0, 0);
   }
@@ -9004,6 +9013,7 @@ module.exports = {
     width: 161,
     scale: 400/161,
     numParasites: 60,
+    fadeSpeed: 0.01, // higher is faster
     colors: {
         speciesColorMap: {
             type: 'd3',
@@ -9350,8 +9360,8 @@ function reset(numSpecies = 9) {
 
 
 },{"./canvas.js":2,"./config.js":4,"./controls.js":5,"./model.js":8}],8:[function(require,module,exports){
-const { HSLToRGB, RGBToHSL, getOutcomeFromProbabilities } = require('./util.js')
-
+const { getOutcomeFromProbabilities } = require('./util.js')
+const { fadeSpeed } = require('./config.js')
 const { speciesColor, parasiteColor, emptyColor } = require('./colormaps.js')
 const CLAIM_EMPTY = 11
 
@@ -9431,6 +9441,9 @@ module.exports.createModel = (w = 50, controls) => {
             const b = y - center
             const distanceFromCenter = Math.sqrt(a*a + b*b)
            
+            node.prevState = STATES.EMPTY
+            node.fade = 0 // amount to fade out
+            node.fadeState = 0 // last color showing before fade
             if(distanceFromCenter < n/3) {
                 node.state = getOutcomeFromProbabilities(outcomes, probabilities)
             } else {
@@ -9487,7 +9500,10 @@ module.exports.createModel = (w = 50, controls) => {
          if (Math.random() < diffusionAmount.value) {
             const n = node.neighbors[Math.floor(Math.random() * node.neighbors.length)]
             const newState = node.state
+            node.prevState = node.state
             node.state = n.state
+
+            n.prevState = n.state
             n.state = newState
          }
         }
@@ -9495,12 +9511,13 @@ module.exports.createModel = (w = 50, controls) => {
 
     const replicate = (node) => {
         let newState = node.state
+        let replication = replicationAmount.value
         if (node.neighborsObject) {
             const { n, nw, ne, w, e, sw, s, se } = node.neighborsObject
-            const cN = SPECIES[n.state].replication * replicationAmount.value + c(n, ne) + c(n, nw) + c(n, w) + c(n, e)
-            const cS = SPECIES[s.state].replication * replicationAmount.value + c(s, se) + c(s, sw) + c(s, w) + c(s, e)
-            const cE = SPECIES[e.state].replication * replicationAmount.value + c(e, ne) + c(e, se) + c(e, n) + c(e, s)
-            const cW = SPECIES[w.state].replication * replicationAmount.value + c(w, nw) + c(w, sw) + c(w, n) + c(w, s)
+            const cN = SPECIES[n.state].replication * replication + c(n, ne) + c(n, nw) + c(n, w) + c(n, e)
+            const cS = SPECIES[s.state].replication * replication + c(s, se) + c(s, sw) + c(s, w) + c(s, e)
+            const cE = SPECIES[e.state].replication * replication + c(e, ne) + c(e, se) + c(e, n) + c(e, s)
+            const cW = SPECIES[w.state].replication * replication + c(w, nw) + c(w, sw) + c(w, n) + c(w, s)
 
             const cSum = cN + cS + cE + cW + CLAIM_EMPTY
 
@@ -9520,30 +9537,44 @@ module.exports.createModel = (w = 50, controls) => {
 
     const update = () => {
         const numDiffusionSteps = Math.round(diffusionSteps.value)
-        const newNodeState = new Array(l.nodes.length)
+        const updateProb = 1 - updateProbability.value
+        const empty = STATES.EMPTY
+        // const newNodeState = new Array(l.nodes.length)
         l.nodes.forEach((node, i) => {
             const { state } = node
             let newState = state
           //  if(Math.random() > (1 - UPDATE_PROBABILITY)) {
-            if(Math.random() > (1 - updateProbability.value)) {
-                if (state !== STATES.EMPTY) {
+            if(Math.random() > updateProb) {
+                if (state !== empty) {
                     newState = decay(state)
                 } else {
                     newState = replicate(node)
                 }
             }
-            newNodeState[i] = newState
+          //  newNodeState[i] = newState
+            node.prevState = node.state
+            node.state = newState
         })
 
-        l.nodes.forEach((node, i) => {
-            node.state = newNodeState[i]
-        })
+        // l.nodes.forEach((node, i) => {
+           
+        // })
 
         for (let i = 0; i < numDiffusionSteps; i++) {
             l.nodes.forEach((node, i) => {
                 diffusion(node)
             })
         }
+
+        l.nodes.forEach((node, i) => {
+           // if transtitioning to empty, start fade
+           if(node.prevState !== STATES.EMPTY && node.state === STATES.EMPTY) {
+            node.fade = 1
+            node.fadeState = node.prevState
+           } else if (node.fade > 0) {
+            node.fade -= fadeSpeed
+           }
+        })
     }
 
     return {
@@ -9559,7 +9590,7 @@ module.exports.createModel = (w = 50, controls) => {
 
 
 
-},{"./colormaps.js":3,"./util.js":9}],9:[function(require,module,exports){
+},{"./colormaps.js":3,"./config.js":4,"./util.js":9}],9:[function(require,module,exports){
 module.exports.HSLToRGB = ( h,s,l) => {
     // Must be fractions of 1
     s /= 100;
