@@ -220,7 +220,8 @@ module.exports.createModel = (w = 50, controls) => {
         })
 
     //    console.log('species counts', SPECIES)
-        controls.updateDiagramOpacity(SPECIES[1].count === 0 ? 0 : 1, [])
+        const speciesCounts = SPECIES.slice(2).map((s) => s.count === 0 ? 0 : 1)
+        controls.updateDiagramOpacity(SPECIES[1].count === 0 ? 0 : 1, speciesCounts)
     }
 
     return {

@@ -132,30 +132,19 @@ module.exports = ({ parent, x, y }) => {
             .attr("r", knobsize)
             .attr("cx", X(kopp[kopp.length - 1].x))
             .attr("cy", Y(kopp[kopp.length - 1].y))
-
-        // if (showdefector.value == true) {
-        //     defector.style("opacity",1)
-        //     defectorlink.style("opacity",1)
-        //     defectorlinkhead.style("opacity",1)
-        // } else {
-
        
-
+        defector.style("opacity", 0)
+        defectorlink.style("opacity", 0)
+        defectorlinkhead.style("opacity", 0)
     }
 
     const updateOpacity = (parasiteOpacity = 1, speciesOpacity = []) => {
-        console.log('parasite', parasiteOpacity)
         defector.style("opacity", parasiteOpacity)
         defectorlink.style("opacity", parasiteOpacity)
         defectorlinkhead.style("opacity", parasiteOpacity)
 
-      //  console.log(layer0, 'layer0')
-        //  }
-        // layer0._groups[0].style("opacity", 0)
-        layer1.style("opacity", (d, i) => {
-           // console.log(d, i)
-            return 0.5
-        })
+        layer1.style("opacity", (d, i) => speciesOpacity[i])
+        layer0.style("opacity", (d, i) => speciesOpacity[i])
     }
 
     return { draw, updateOpacity }
