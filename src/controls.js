@@ -66,7 +66,7 @@ module.exports = ({ reset, runpause, render, addRandomParasites, addParasitesToC
     ]
 
     const toggles = [
-        widget.toggle({ id: "t1", name: "color by majority", value: true }).update(render).label("bottom").size(10)
+        widget.toggle({ id: "t1", name: "smooth", value: false }).update(render).label("bottom").size(10)
     ]
 
     const radioData =  [3, 6, 9].map((v) => ({label: `${v} species`, val: v}))
