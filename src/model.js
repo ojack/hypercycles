@@ -23,7 +23,7 @@ module.exports.createModel = (w = 50, controls) => {
     // colors and replication parameters for each species
     const createSpeciesArray = (numSpecies = 9) => new Array(numSpecies + speciesStartIndex).fill(0).map((_, i) => {
         // initial state, catalyticSupport is an object containing the other species that this molecule will help catalyze
-        const s = { index: i, catalyticSupport: {} }
+        const s = { index: i, catalyticSupport: {}, count: 0 }
         // first state is "EMPTY" state
         if (i === STATES.EMPTY) {
             s.color = emptyColor
@@ -178,6 +178,9 @@ module.exports.createModel = (w = 50, controls) => {
         const numDiffusionSteps = Math.round(diffusionSteps.value)
         const updateProb = 1 - updateProbability.value
         const empty = STATES.EMPTY
+        
+        // reset species count
+        SPECIES.forEach((s) => { s.count = 0 })
         // const newNodeState = new Array(l.nodes.length)
         l.nodes.forEach((node, i) => {
             const { state } = node
@@ -193,6 +196,7 @@ module.exports.createModel = (w = 50, controls) => {
           //  newNodeState[i] = newState
             node.prevState = node.state
             node.state = newState
+            SPECIES[node.state].count ++
         })
 
         // l.nodes.forEach((node, i) => {
@@ -214,6 +218,9 @@ module.exports.createModel = (w = 50, controls) => {
             node.fade -= fadeSpeed
            }
         })
+
+    //    console.log('species counts', SPECIES)
+        controls.updateDiagramOpacity(SPECIES[1].count === 0 ? 0 : 1, [])
     }
 
     return {

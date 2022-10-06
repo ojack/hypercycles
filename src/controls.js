@@ -124,6 +124,7 @@ module.exports = ({ reset, runpause, render, addRandomParasites, addParasitesToC
         sliders: sliders,
         buttons: buttons,
         toggles: toggles,
-        updateDiagram: (SPECIES) => { diagram.draw(SPECIES) }
+        updateDiagram: (SPECIES) => { diagram.draw(SPECIES) },
+        updateDiagramOpacity: diagram.updateOpacity
     }
 }

@@ -3,9 +3,11 @@ var world_height = 400
 
 module.exports = ({ parent, x, y }) => {
     var origin = parent.append("g")
-    .attr("class", "diagram")
-    .attr("transform", "translate(" + x + "," + y + ")");
+        .attr("class", "diagram")
+        .attr("transform", "translate(" + x + "," + y + ")");
     // var origin = display
+    let layer0, defector, defectorlink, defectorlinkhead, layer1
+
     const draw = (species) => {
         const speciesWithoutParasite = species.filter((s) => Object.keys(s.catalyticSupport).length > 0)
         origin.selectAll("*").remove()
@@ -58,30 +60,30 @@ module.exports = ({ parent, x, y }) => {
                 target: linkTarget
             });
 
-      
 
-        var layer0 = origin.selectAll(".kopp").data(nodes).enter().append("g").attr("class", "kopp")
+
+        layer0 = origin.selectAll(".kopp").data(nodes).enter().append("g").attr("class", "kopp")
             .attr("transform", function (d, i) {
                 return "rotate(" + i * (360 / N) + ")translate(" + X(R) + ")"
             })
 
-        var layer1 = origin.selectAll(".node").data(nodes).enter().append("g").attr("class", "node")
+        layer1 = origin.selectAll(".node").data(nodes).enter().append("g").attr("class", "node")
             .attr("transform", function (d, i) {
                 return "rotate(" + i * (360 / N) + ")translate(" + X(R) + ")"
             })
 
 
-        var defectorlink = origin.append('path').attr("class", "link")
+        defectorlink = origin.append('path').attr("class", "link")
             .attr('d', link)
             .style("stroke", "black")
             .attr('fill', 'none');
 
-        var defectorlinkhead = origin.append("circle").attr("class", "head")
+        defectorlinkhead = origin.append("circle").attr("class", "head")
             .attr("r", knobsize)
             .attr("cx", linkTarget.x)
             .attr("cy", linkTarget.y)
 
-        var defector = origin.append("g")
+        defector = origin.append("g")
             .attr("transform", "translate(" + X(1.8 * R * Math.cos(Math.PI / 5)) + "," + Y(1.8 * R * Math.sin(Math.PI / 5)) + ")")
 
         defector.append("circle").attr("class", "head").attr("id", "defector")
@@ -91,7 +93,7 @@ module.exports = ({ parent, x, y }) => {
 
         defector.append("circle").attr("class", "circle").attr("id", "defector")
             .attr("r", X(noderadius()))
-			.attr("stroke","rgb(100,100,100)")
+            .attr("stroke", "rgb(100,100,100)")
 
         defector.append("path").datum(kopp).attr("d", line).attr("class", "link")
             .style("stroke", "black")
@@ -103,12 +105,12 @@ module.exports = ({ parent, x, y }) => {
             .attr("r", X(noderadius()))
             .attr("cx", 0)
             .attr("cy", 0)
-           // .style("fill", function (d, i) { return d3.interpolateRainbow(i / N) })
-           .style("fill", (d, i) => {
-            // if(speciesWithoutParasite[i].catalyticSupport[1]) return "#f00"
-            // if(speciesWithoutParasite[i].index == 3) return "#0f0"
-            return speciesWithoutParasite[i].color.hex 
-        })
+            // .style("fill", function (d, i) { return d3.interpolateRainbow(i / N) })
+            .style("fill", (d, i) => {
+                // if(speciesWithoutParasite[i].catalyticSupport[1]) return "#f00"
+                // if(speciesWithoutParasite[i].index == 3) return "#0f0"
+                return speciesWithoutParasite[i].color.hex
+            })
 
 
         layer1.append("path").datum(circ).attr("d", line).attr("class", "link").attr("id", "link")
@@ -130,7 +132,31 @@ module.exports = ({ parent, x, y }) => {
             .attr("r", knobsize)
             .attr("cx", X(kopp[kopp.length - 1].x))
             .attr("cy", Y(kopp[kopp.length - 1].y))
+
+        // if (showdefector.value == true) {
+        //     defector.style("opacity",1)
+        //     defectorlink.style("opacity",1)
+        //     defectorlinkhead.style("opacity",1)
+        // } else {
+
+       
+
     }
 
-    return { draw }
+    const updateOpacity = (parasiteOpacity = 1, speciesOpacity = []) => {
+        console.log('parasite', parasiteOpacity)
+        defector.style("opacity", parasiteOpacity)
+        defectorlink.style("opacity", parasiteOpacity)
+        defectorlinkhead.style("opacity", parasiteOpacity)
+
+      //  console.log(layer0, 'layer0')
+        //  }
+        // layer0._groups[0].style("opacity", 0)
+        layer1.style("opacity", (d, i) => {
+           // console.log(d, i)
+            return 0.5
+        })
+    }
+
+    return { draw, updateOpacity }
 }
